@@ -1571,6 +1571,7 @@ const setInputsT = t=>{ FIELDS_T.forEach(f=>{ document.getElementById(f.id).valu
 const dHoy = ()=>new Date().toISOString().split('T')[0];
 const fmtT_n = n=>{ if(!n||isNaN(n)) return '—'; if(n<0.0001) return Number(n).toFixed(7); if(n<0.01) return Number(n).toFixed(6); if(n<1) return Number(n).toFixed(5); if(n>10000) return Number(n).toLocaleString('es-CL',{maximumFractionDigits:2}); return Number(n).toFixed(4); };
 const fmtN_t = n=>(!n&&n!==0)||isNaN(n)?'—':Number(n).toLocaleString('es-CL',{maximumFractionDigits:2});
+const fmtFixed=(n,d)=>(!n&&n!==0)||isNaN(n)?'—':Number(n).toFixed(d);
 const fmt_t  = n=>(!n&&n!==0)||isNaN(n)?'—':Number(n).toLocaleString('es-CL',{maximumFractionDigits:3});
 function fmtF(iso){ if(!iso) return '—'; const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; }
 
@@ -1644,16 +1645,26 @@ function initBarTasas(){
 
 // ── TABLA DE ENVÍOS ──
 const PARES=[
-  {label:'CHILE - COLOMBIA',or:'CLP',dst:'COP'},{label:'CHILE - PERU',or:'CLP',dst:'PEN'},
-  {label:'CHILE - VENEZUELA',or:'CLP',dst:'VES'},{label:'CHILE - ZELLE',or:'CLP',dst:'ZELLE'},
-  {label:'COLOMBIA - CHILE',or:'COP',dst:'CLP'},{label:'COLOMBIA - PERU',or:'COP',dst:'PEN'},
-  {label:'COLOMBIA - VENEZUELA',or:'COP',dst:'VES'},{label:'COLOMBIA - ZELLE',or:'COP',dst:'ZELLE'},
-  {label:'PERU - CHILE',or:'PEN',dst:'CLP'},{label:'PERU - COLOMBIA',or:'PEN',dst:'COP'},
-  {label:'PERU - VENEZUELA',or:'PEN',dst:'VES'},{label:'PERU - ZELLE',or:'PEN',dst:'ZELLE'},
-  {label:'VENEZUELA - CHILE',or:'VES',dst:'CLP'},{label:'VENEZUELA - COLOMBIA',or:'VES',dst:'COP'},
-  {label:'VENEZUELA - PERÚ',or:'VES',dst:'PEN'},{label:'VENEZUELA - ZELLE',or:'VES',dst:'ZELLE'},
-  {label:'ZELLE - VENEZUELA',or:'ZELLE',dst:'VES'},{label:'ZELLE - PERU',or:'ZELLE',dst:'PEN'},
-  {label:'ZELLE - COLOMBIA',or:'ZELLE',dst:'COP'},{label:'ZELLE - CHILE',or:'ZELLE',dst:'CLP'},
+  {label:'CHILE - COLOMBIA',or:'CLP',dst:'COP',dec:2,op:'-'},
+  {label:'CHILE - PERU',or:'CLP',dst:'PEN',dec:5,op:'-'},
+  {label:'CHILE - VENEZUELA',or:'CLP',dst:'VES',dec:4,op:'-'},
+  {label:'CHILE - ZELLE',or:'CLP',dst:'ZELLE',dec:3,op:'+'},
+  {label:'COLOMBIA - CHILE',or:'COP',dst:'CLP',dec:3,op:'-'},
+  {label:'COLOMBIA - PERU',or:'COP',dst:'PEN',dec:5,op:'-'},
+  {label:'COLOMBIA - VENEZUELA',or:'COP',dst:'VES',dec:3,op:'+'},
+  {label:'COLOMBIA - ZELLE',or:'COP',dst:'ZELLE',dec:0,op:'+'},
+  {label:'PERU - CHILE',or:'PEN',dst:'CLP',dec:0,op:'-'},
+  {label:'PERU - COLOMBIA',or:'PEN',dst:'COP',dec:0,op:'-'},
+  {label:'PERU - VENEZUELA',or:'PEN',dst:'VES',dec:3,op:'-'},
+  {label:'PERU - ZELLE',or:'PEN',dst:'ZELLE',dec:4,op:'-'},
+  {label:'VENEZUELA - CHILE',or:'VES',dst:'CLP',dec:2,op:'-'},
+  {label:'VENEZUELA - COLOMBIA',or:'VES',dst:'COP',dec:2,op:'-'},
+  {label:'VENEZUELA - PERÚ',or:'VES',dst:'PEN',dec:5,op:'-'},
+  {label:'VENEZUELA - ZELLE',or:'VES',dst:'ZELLE',dec:5,op:'-'},
+  {label:'ZELLE - VENEZUELA',or:'ZELLE',dst:'VES',dec:4,op:'-'},
+  {label:'ZELLE - PERU',or:'ZELLE',dst:'PEN',dec:2,op:'-'},
+  {label:'ZELLE - COLOMBIA',or:'ZELLE',dst:'COP',dec:0,op:'-'},
+  {label:'ZELLE - CHILE',or:'ZELLE',dst:'CLP',dec:0,op:'-'},
 ];
 const OR_COLOR={CLP:'#1A1AFF',COP:'#d97706',PEN:'#059669',VES:'#dc2626',ZELLE:'#7c3aed'};
 const OR_BG   ={CLP:'#eef2ff',COP:'#fef3c7',PEN:'#d1fae5',VES:'#fee2e2',ZELLE:'#ede9fe'};
@@ -1688,10 +1699,13 @@ function saveZelleRow(key,val){
   // Actualizar venta y % de esa fila sin re-render
   const rC=zelleRows[key]||0;
   const pct=enviosPct;
-  const tasaV=rC>0?rC*(1+pct/100):0;
+  const par=PARES.find(p=>`${p.or}-${p.dst}`===key);
+  const op=par?par.op:'+';
+  const dec=par!=null?par.dec:4;
+  const tasaV=rC>0?(op==='-'?rC*(1-pct/100):rC*(1+pct/100)):0;
   const vEl=document.getElementById('zrv-'+key);
   const pctEl=document.getElementById('zrpct-'+key);
-  if(vEl) vEl.textContent=tasaV?fmtT_n(tasaV):'—';
+  if(vEl) vEl.textContent=tasaV?fmtFixed(tasaV,dec):'—';
   if(pctEl){ pctEl.className='tp'; pctEl.textContent=rC?pct.toFixed(1)+'%':'—'; }
 }
 
@@ -1715,7 +1729,7 @@ function renderEnviosTasas(){
     if(esZelle){
       const key=`${p.or}-${p.dst}`;
       const tasaC=zelleRows[key]||0;
-      const tasaV=tasaC>0?tasaC*(1+pct/100):0;
+      const tasaV=tasaC>0?(p.op==='-'?tasaC*(1-pct/100):tasaC*(1+pct/100)):0;
       html+=`<tr>
         <td style="color:${col}">${p.label}</td>
         <td><span class="badge" style="background:${bg};color:${col}">${p.or}</span></td>
@@ -1724,11 +1738,11 @@ function renderEnviosTasas(){
         <td>—</td>
         <td class="tk"><input class="zr-input" type="number" value="${tasaC||''}" placeholder="0.0000" step="0.0001" oninput="saveZelleRow('${key}',this.value)"/></td>
         <td id="zrpct-${key}" class="tp">${tasaC?pct.toFixed(1)+'%':'—'}</td>
-        <td id="zrv-${key}" class="tkv">${tasaV?fmtT_n(tasaV):'—'}</td>
+        <td id="zrv-${key}" class="tkv">${tasaV?fmtFixed(tasaV,p.dec):'—'}</td>
       </tr>`;
     } else {
       const r=calcPar(p,t);
-      const tasaV=r.tasaC>0?r.tasaC*(1+pct/100):0;
+      const tasaV=r.tasaC>0?(p.op==='-'?r.tasaC*(1-pct/100):r.tasaC*(1+pct/100)):0;
       html+=`<tr>
         <td style="color:${col}">${p.label}</td>
         <td><span class="badge" style="background:${bg};color:${col}">${p.or}</span></td>
@@ -1737,7 +1751,7 @@ function renderEnviosTasas(){
         <td class="tv">${r.vV?fmtN_t(r.vV):'—'}</td>
         <td class="tk">${r.tasaC?fmtT_n(r.tasaC):'—'}</td>
         <td class="tp">${r.tasaC?pct.toFixed(1)+'%':'—'}</td>
-        <td class="tkv">${tasaV?fmtT_n(tasaV):'—'}</td>
+        <td class="tkv">${tasaV?fmtFixed(tasaV,p.dec):'—'}</td>
       </tr>`;
     }
   });
