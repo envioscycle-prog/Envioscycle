@@ -115,6 +115,55 @@ tr:hover td{background:#f5f5ff;}
   .subnav{gap:0;}
   .stab{padding:8px 10px;font-size:12px;}
 }
+/* ══ MÓDULO TASAS ══ */
+.status-bar{background:var(--azul-dark);padding:7px 1.5rem;display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12px;font-weight:700;}
+.status-item{display:flex;align-items:center;gap:5px;color:rgba(255,255,255,0.65);}
+.status-item strong{color:#fff;}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#ff6b6b;flex-shrink:0;transition:background 0.3s;}
+.status-dot.ok{background:var(--verde);box-shadow:0 0 6px var(--verde);}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:1.25rem;font-weight:600;}
+.par-box{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rsm);overflow:hidden;transition:border-color 0.15s;}
+.par-box:focus-within{border-color:var(--azul);}
+.par-header{padding:7px 12px;font-size:11px;font-weight:900;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);background:#fff;}
+.par-header-flag{font-size:15px;}
+.par-header-name{color:var(--azul);}
+.par-body{display:grid;grid-template-columns:1fr 1fr;}
+.par-half{padding:9px 12px;}
+.par-half:first-child{border-right:1px solid var(--border);}
+.par-sublabel{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px;}
+.par-sublabel.c{color:var(--verde);}
+.par-sublabel.v{color:var(--rojo);}
+.par-input{width:100%;border:none;background:transparent;font-size:16px;font-weight:900;font-family:'Nunito',sans-serif;color:var(--texto);outline:none;padding:0;}
+.par-input::placeholder{color:#cccce0;font-weight:600;font-size:14px;}
+.par-input:focus{color:var(--azul);}
+.chips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:4px;}
+.chip{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rsm);padding:10px 12px;}
+.chip-mon{font-size:11px;font-weight:900;color:var(--azul);margin-bottom:4px;}
+.chip-vals{display:flex;gap:6px;align-items:center;}
+.chip-c{font-size:14px;font-weight:900;color:var(--verde);}
+.chip-v{font-size:14px;font-weight:900;color:var(--rojo);}
+.chip-sep{font-size:11px;color:var(--border);}
+.chip-lbl{font-size:9px;color:var(--muted);font-weight:800;text-transform:uppercase;margin-top:2px;}
+.sec-title{font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin:16px 0 12px;display:flex;align-items:center;gap:8px;}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.hist-item{border:1.5px solid var(--border);border-radius:var(--rsm);overflow:hidden;margin-bottom:10px;}
+.hist-header{padding:10px 14px;background:#f9f9ff;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;}
+.hist-header:hover{background:#eef2ff;}
+.hist-body{display:none;padding:12px 14px;border-top:1px solid var(--border);}
+.nota-box-tasas{background:var(--am-soft);border:1.5px solid var(--am);border-radius:var(--rsm);padding:10px 14px;font-size:12px;font-weight:700;color:var(--am);margin-bottom:1rem;}
+#mod-tasas table{font-size:13px;min-width:720px;}
+#mod-tasas thead th{background:#eef2ff;padding:9px 10px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;color:var(--azul);border-bottom:2px solid var(--border);white-space:nowrap;text-align:center;}
+#mod-tasas thead th:first-child{text-align:left;min-width:170px;}
+#mod-tasas tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s;}
+#mod-tasas tbody tr:hover{background:#f5f7ff;}
+#mod-tasas tbody td{padding:9px 10px;text-align:center;font-weight:700;font-size:13px;}
+#mod-tasas tbody td:first-child{text-align:left;font-weight:900;}
+.tc{color:var(--verde);font-weight:900;}
+.tv{color:var(--rojo);font-weight:900;}
+.tk{color:var(--azul);font-weight:900;}
+.tp{color:var(--am);font-weight:900;}
+.tkv{color:#7c3aed;font-weight:900;}
+tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:5px 10px;border:none;}
 </style>
 </head>
 <body>
@@ -123,6 +172,7 @@ tr:hover td{background:#f5f5ff;}
   <nav class="nav-tabs" id="mod-tabs">
     <button class="tab active" onclick="showMod('directorio',this)">Directorio</button>
     <button class="tab" onclick="showMod('streaming',this)">Streaming</button>
+    <button class="tab" onclick="showMod('tasas',this)">Tasas</button>
   </nav>
 </div>
 
@@ -141,6 +191,23 @@ tr:hover td{background:#f5f5ff;}
   <button class="stab" onclick="showStreamPage('alertas',this)">Alertas</button>
   <button class="stab" onclick="showStreamPage('comisiones',this)">Comisiones</button>
   <button class="stab" onclick="showStreamPage('tarifario',this)">Tarifario</button>
+</div>
+
+<div class="subnav" id="subnav-tasas" style="display:none">
+  <button class="stab active" onclick="showTasasPage('t-tasas',this)">Tasas del día</button>
+  <button class="stab" onclick="showTasasPage('t-envios',this);renderEnviosTasas()">Tabla de envíos</button>
+  <button class="stab" onclick="showTasasPage('t-hist',this);renderHistorialTasas()">Historial</button>
+</div>
+
+<div class="status-bar" id="tasas-status-bar" style="display:none">
+  <div class="status-item"><div class="status-dot" id="sdot"></div>&nbsp;<strong id="stxt">Sin tasas hoy</strong></div>
+  <div class="status-item">📅 <strong id="sfecha">—</strong></div>
+  <div class="status-item">🇻🇪 VES <strong id="sves">—</strong></div>
+  <div class="status-item">🇨🇱 CLP <strong id="sclp">—</strong></div>
+  <div class="status-item">🇨🇴 COP <strong id="scop">—</strong></div>
+  <div class="status-item">🇵🇪 PEN <strong id="spen">—</strong></div>
+  <div class="status-item">💸 ZINLI <strong id="szinli">—</strong></div>
+  <div class="status-item">⚡ ZELLE <strong id="szelle">—</strong></div>
 </div>
 
 <div class="main">
@@ -511,6 +578,119 @@ tr:hover td{background:#f5f5ff;}
 
   </div>
 
+  <!-- MODULE: TASAS -->
+  <div id="mod-tasas" style="display:none">
+
+  <!-- TASAS DEL DÍA -->
+  <div id="t-tasas" class="page active">
+    <div class="page-title">Tasas del día</div>
+    <div class="page-sub">Usadas en recargas, streaming y remesas</div>
+    <div class="card">
+      <div class="card-title">💱 Monedas locales &nbsp;—&nbsp; compra / venta por 1 USD</div>
+      <div class="g4">
+        <div class="par-box">
+          <div class="par-header"><span class="par-header-flag">🇵🇪</span><span class="par-header-name">PEN — Sol</span></div>
+          <div class="par-body">
+            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="pen-c" placeholder="3.58" step="0.001" oninput="previewTasas()"/></div>
+            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="pen-v" placeholder="3.45" step="0.001" oninput="previewTasas()"/></div>
+          </div>
+        </div>
+        <div class="par-box">
+          <div class="par-header"><span class="par-header-flag">🇻🇪</span><span class="par-header-name">VES — Bolívar</span></div>
+          <div class="par-body">
+            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="ves-c" placeholder="632000" step="1" oninput="previewTasas()"/></div>
+            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="ves-v" placeholder="620000" step="1" oninput="previewTasas()"/></div>
+          </div>
+        </div>
+        <div class="par-box">
+          <div class="par-header"><span class="par-header-flag">🇨🇴</span><span class="par-header-name">COP — Peso col.</span></div>
+          <div class="par-body">
+            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="cop-c" placeholder="3700" step="1" oninput="previewTasas()"/></div>
+            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="cop-v" placeholder="3600" step="1" oninput="previewTasas()"/></div>
+          </div>
+        </div>
+        <div class="par-box">
+          <div class="par-header"><span class="par-header-flag">🇨🇱</span><span class="par-header-name">CLP — Peso CL</span></div>
+          <div class="par-body">
+            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="clp-c" placeholder="930" step="0.1" oninput="previewTasas()"/></div>
+            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="clp-v" placeholder="918" step="0.1" oninput="previewTasas()"/></div>
+          </div>
+        </div>
+      </div>
+      <div class="sec-title">Apps &amp; Plataformas</div>
+      <div class="g4" style="margin-bottom:0">
+        <div class="par-box">
+          <div class="par-header"><span class="par-header-flag">💸</span><span class="par-header-name">ZINLI</span></div>
+          <div class="par-body">
+            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="zinli-c" placeholder="1.06" step="0.001" oninput="previewTasas()"/></div>
+            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="zinli-v" placeholder="0.98" step="0.001" oninput="previewTasas()"/></div>
+          </div>
+        </div>
+        <div class="par-box">
+          <div class="par-header"><span class="par-header-flag">⚡</span><span class="par-header-name">ZELLE / USD</span></div>
+          <div class="par-body">
+            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="zelle-c" placeholder="1.08" step="0.001" oninput="previewTasas()"/></div>
+            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="zelle-v" placeholder="0.97" step="0.001" oninput="previewTasas()"/></div>
+          </div>
+        </div>
+        <div class="par-box">
+          <div class="par-header"><span class="par-header-flag">🟢</span><span class="par-header-name">USDT</span></div>
+          <div class="par-body">
+            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="usdt-c" placeholder="1.00" step="0.001" oninput="previewTasas()"/></div>
+            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="usdt-v" placeholder="0.98" step="0.001" oninput="previewTasas()"/></div>
+          </div>
+        </div>
+        <div class="par-box">
+          <div class="par-header"><span class="par-header-flag">🇪🇺</span><span class="par-header-name">EUR — Euro</span></div>
+          <div class="par-body">
+            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="eur-c" placeholder="—" step="0.001" oninput="previewTasas()"/></div>
+            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="eur-v" placeholder="—" step="0.001" oninput="previewTasas()"/></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="g2">
+      <button class="btn-primary" onclick="guardarTasas()">💾 Guardar tasas del día</button>
+      <button class="btn-primary" style="background:var(--verde)" onclick="cargarUltimas()">↩ Cargar últimas tasas</button>
+    </div>
+    <div id="preview-card" class="card" style="display:none">
+      <div class="card-title">👁 Previsualización</div>
+      <div class="chips-grid" id="preview-chips"></div>
+      <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:6px;text-align:right" id="preview-lbl"></div>
+    </div>
+  </div>
+
+  <!-- ENVÍOS -->
+  <div id="t-envios" class="page">
+    <div class="page-title">Tabla de envíos (remesas)</div>
+    <div class="page-sub">Calculada automáticamente desde las tasas del día</div>
+    <div id="env-nota" class="nota-box-tasas" style="display:none">⚠️ No hay tasas guardadas para hoy. Ingresalas en <strong>Tasas del día</strong> primero.</div>
+    <div id="env-card" class="card">
+      <div class="card-title">🌎 Envíos de: <span id="env-fecha" class="badge b-cian" style="margin-left:4px"></span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align:left">ENVÍOS DE</th>
+              <th>ORIGEN</th><th>V.COMPRA</th><th>DESTINO</th><th>V.VENTA</th>
+              <th>TASA COMPRA</th><th>%</th><th>TASA VENTA</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-env"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORIAL -->
+  <div id="t-hist" class="page">
+    <div class="page-title">Historial de tasas</div>
+    <div class="page-sub">Un registro por día</div>
+    <div class="card"><div id="hist-cont"></div></div>
+  </div>
+
+  </div><!-- /mod-tasas -->
+
 </div>
 
 <script>
@@ -546,15 +726,19 @@ loadAll();
 
 // ── NAVEGACIÓN DE MÓDULOS ──
 function showMod(mod,btn){
-  const dir=mod==='directorio';
+  const dir=mod==='directorio', str=mod==='streaming', tas=mod==='tasas';
   document.getElementById('mod-directorio').style.display=dir?'block':'none';
-  document.getElementById('mod-streaming').style.display=dir?'none':'block';
+  document.getElementById('mod-streaming').style.display=str?'block':'none';
+  document.getElementById('mod-tasas').style.display=tas?'block':'none';
   document.getElementById('subnav-dir').style.display=dir?'flex':'none';
-  document.getElementById('subnav-stream').style.display=dir?'none':'flex';
+  document.getElementById('subnav-stream').style.display=str?'flex':'none';
+  document.getElementById('subnav-tasas').style.display=tas?'flex':'none';
+  document.getElementById('tasas-status-bar').style.display=tas?'flex':'none';
   document.querySelectorAll('#mod-tabs .tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   if(dir)renderResumen();
-  else renderDash();
+  else if(str)renderDash();
+  else if(tas)initBarTasas();
 }
 
 function showDirPage(id,btn){
@@ -572,6 +756,13 @@ function showStreamPage(id,btn){
   btn.classList.add('active');
   const map={dashboard:renderDash,inventario:()=>{poblarFiltroVend();renderInv();},alertas:renderAlertas,comisiones:renderComisiones,tarifario:renderTarifario};
   if(map[id])map[id]();
+}
+
+function showTasasPage(id,btn){
+  document.querySelectorAll('#mod-tasas .page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#subnav-tasas .stab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
 }
 
 // ── NAVEGACIÓN INTERNA DIRECTORIO ──
@@ -1335,6 +1526,228 @@ function exportCSV(){
 
 // ── INIT ──
 renderDash();renderTarifario();
+
+// ══════════════════════════════════════════
+// MÓDULO TASAS
+// ══════════════════════════════════════════
+
+const KEY_TASAS = 'cc_tasas_v2';
+const KEY_SHARED = 'cc_tasas_hoy';
+let dbTasas = (()=>{ try{ const d=localStorage.getItem(KEY_TASAS); return d?JSON.parse(d):{registros:[]}; }catch(e){return{registros:[]};} })();
+const saveTasasDb = ()=>{ try{ localStorage.setItem(KEY_TASAS, JSON.stringify(dbTasas)); }catch(e){} };
+function saveShared(t){ try{ localStorage.setItem(KEY_SHARED, JSON.stringify(t)); }catch(e){} }
+
+const FIELDS_T = [
+  {id:'pen-c',k:'penC'},{id:'pen-v',k:'penV'},
+  {id:'ves-c',k:'vesC'},{id:'ves-v',k:'vesV'},
+  {id:'cop-c',k:'copC'},{id:'cop-v',k:'copV'},
+  {id:'clp-c',k:'clpC'},{id:'clp-v',k:'clpV'},
+  {id:'zinli-c',k:'zinliC'},{id:'zinli-v',k:'zinliV'},
+  {id:'zelle-c',k:'zelleC'},{id:'zelle-v',k:'zelleV'},
+  {id:'usdt-c',k:'usdtC'},{id:'usdt-v',k:'usdtV'},
+  {id:'eur-c',k:'eurC'},{id:'eur-v',k:'eurV'},
+];
+const getInputsT = ()=>{ const t={}; FIELDS_T.forEach(f=>{ const v=parseFloat(document.getElementById(f.id).value); if(!isNaN(v)&&v>0) t[f.k]=v; }); return t; };
+const setInputsT = t=>{ FIELDS_T.forEach(f=>{ document.getElementById(f.id).value=t[f.k]!==undefined?t[f.k]:''; }); };
+
+const dHoy = ()=>new Date().toISOString().split('T')[0];
+const fmtT_n = n=>{ if(!n||isNaN(n)) return '—'; if(n<0.0001) return Number(n).toFixed(7); if(n<0.01) return Number(n).toFixed(6); if(n<1) return Number(n).toFixed(5); if(n>10000) return Number(n).toLocaleString('es-CL',{maximumFractionDigits:2}); return Number(n).toFixed(4); };
+const fmtN_t = n=>(!n&&n!==0)||isNaN(n)?'—':Number(n).toLocaleString('es-CL',{maximumFractionDigits:2});
+const fmt_t  = n=>(!n&&n!==0)||isNaN(n)?'—':Number(n).toLocaleString('es-CL',{maximumFractionDigits:3});
+function fmtF(iso){ if(!iso) return '—'; const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; }
+
+function guardarTasas(){
+  const t=getInputsT();
+  if(!Object.keys(t).length){ alert('Ingresá al menos una tasa.'); return; }
+  const hoy=dHoy();
+  const reg={fecha:hoy,...t};
+  const idx=dbTasas.registros.findIndex(r=>r.fecha===hoy);
+  if(idx>=0) dbTasas.registros[idx]=reg; else dbTasas.registros.push(reg);
+  saveTasasDb();
+  saveShared(reg);
+  updateBarTasas(reg);
+  previewTasas();
+  document.getElementById('preview-lbl').textContent='Guardado: '+fmtF(hoy);
+  alert('✅ Tasas guardadas para hoy.');
+}
+
+function cargarUltimas(){
+  if(!dbTasas.registros.length){ alert('No hay tasas previas.'); return; }
+  const u=[...dbTasas.registros].sort((a,b)=>b.fecha.localeCompare(a.fecha))[0];
+  setInputsT(u); previewTasas();
+}
+
+function previewTasas(){
+  const t=getInputsT();
+  const card=document.getElementById('preview-card');
+  if(!Object.keys(t).length){ card.style.display='none'; return; }
+  card.style.display='block';
+  const defs=[
+    {mon:'🇵🇪 PEN',c:t.penC,v:t.penV},{mon:'🇻🇪 VES',c:t.vesC,v:t.vesV},
+    {mon:'🇨🇴 COP',c:t.copC,v:t.copV},{mon:'🇨🇱 CLP',c:t.clpC,v:t.clpV},
+    {mon:'💸 ZINLI',c:t.zinliC,v:t.zinliV},{mon:'⚡ ZELLE',c:t.zelleC,v:t.zelleV},
+    {mon:'🟢 USDT',c:t.usdtC,v:t.usdtV},{mon:'🇪🇺 EUR',c:t.eurC,v:t.eurV},
+  ];
+  document.getElementById('preview-chips').innerHTML=defs.map(d=>{
+    if(!d.c&&!d.v) return '';
+    return `<div class="chip">
+      <div class="chip-mon">${d.mon}</div>
+      <div class="chip-vals">
+        ${d.c!==undefined?`<span class="chip-c">${fmt_t(d.c)}</span>`:''}
+        ${d.c!==undefined&&d.v!==undefined?`<span class="chip-sep">·</span>`:''}
+        ${d.v!==undefined?`<span class="chip-v">${fmt_t(d.v)}</span>`:''}
+      </div>
+      <div class="chip-lbl">${d.c!==undefined&&d.v!==undefined?'compra · venta':d.c!==undefined?'compra':'venta'}</div>
+    </div>`;
+  }).join('');
+}
+
+function updateBarTasas(t){
+  if(!t){
+    document.getElementById('sdot').className='status-dot';
+    document.getElementById('stxt').textContent='Sin tasas hoy';
+    return;
+  }
+  document.getElementById('sdot').className='status-dot ok';
+  document.getElementById('stxt').textContent='Tasas activas';
+  document.getElementById('sfecha').textContent=fmtF(t.fecha||dHoy());
+  document.getElementById('sves').textContent=t.vesV?fmt_t(t.vesV):'—';
+  document.getElementById('sclp').textContent=t.clpV?fmt_t(t.clpV):'—';
+  document.getElementById('scop').textContent=t.copV?fmt_t(t.copV):'—';
+  document.getElementById('spen').textContent=t.penV?fmt_t(t.penV):'—';
+  document.getElementById('szinli').textContent=t.zinliV?fmt_t(t.zinliV):'—';
+  document.getElementById('szelle').textContent=t.zelleV?fmt_t(t.zelleV):'—';
+}
+
+function initBarTasas(){
+  const t=dbTasas.registros.find(r=>r.fecha===dHoy())||null;
+  updateBarTasas(t);
+}
+
+// ── TABLA DE ENVÍOS ──
+const PARES=[
+  {label:'CHILE - COLOMBIA',or:'CLP',dst:'COP'},{label:'CHILE - PERU',or:'CLP',dst:'PEN'},
+  {label:'CHILE - VENEZUELA',or:'CLP',dst:'VES'},{label:'CHILE - ZELLE',or:'CLP',dst:'ZELLE'},
+  {label:'COLOMBIA - CHILE',or:'COP',dst:'CLP'},{label:'COLOMBIA - PERU',or:'COP',dst:'PEN'},
+  {label:'COLOMBIA - VENEZUELA',or:'COP',dst:'VES'},{label:'COLOMBIA - ZELLE',or:'COP',dst:'ZELLE'},
+  {label:'PERU - CHILE',or:'PEN',dst:'CLP'},{label:'PERU - COLOMBIA',or:'PEN',dst:'COP'},
+  {label:'PERU - VENEZUELA',or:'PEN',dst:'VES'},{label:'PERU - ZELLE',or:'PEN',dst:'ZELLE'},
+  {label:'VENEZUELA - CHILE',or:'VES',dst:'CLP'},{label:'VENEZUELA - COLOMBIA',or:'VES',dst:'COP'},
+  {label:'VENEZUELA - PERÚ',or:'VES',dst:'PEN'},{label:'VENEZUELA - ZELLE',or:'VES',dst:'ZELLE'},
+  {label:'ZELLE - VENEZUELA',or:'ZELLE',dst:'VES'},{label:'ZELLE - PERU',or:'ZELLE',dst:'PEN'},
+  {label:'ZELLE - COLOMBIA',or:'ZELLE',dst:'COP'},{label:'ZELLE - CHILE',or:'ZELLE',dst:'CLP'},
+];
+const OR_COLOR={CLP:'#1A1AFF',COP:'#d97706',PEN:'#059669',VES:'#dc2626',ZELLE:'#7c3aed'};
+const OR_BG   ={CLP:'#eef2ff',COP:'#fef3c7',PEN:'#d1fae5',VES:'#fee2e2',ZELLE:'#ede9fe'};
+const GRUPOS  ={CLP:'CHILE',COP:'COLOMBIA',PEN:'PERU',VES:'VENEZUELA',ZELLE:'ZELLE'};
+function isApp(m){ return ['ZELLE','ZINLI','USDT'].includes(m); }
+function tasaCompraLocal(m,t){ const map={CLP:t.clpC,PEN:t.penC,VES:t.vesC,COP:t.copC,ZELLE:t.zelleC,ZINLI:t.zinliC,USDT:t.usdtC,EUR:t.eurC}; return map[m]||0; }
+function tasaVentaLocal(m,t){ const map={CLP:t.clpV,PEN:t.penV,VES:t.vesV,COP:t.copV,ZELLE:t.zelleV,ZINLI:t.zinliV,USDT:t.usdtV,EUR:t.eurV}; return map[m]||0; }
+function calcPar(p,t){
+  const vC=tasaCompraLocal(p.or,t), vV=tasaVentaLocal(p.dst,t);
+  let tasaC=0, tasaV=0;
+  if(isApp(p.or)&&!isApp(p.dst)){ tasaC=vC*vV; const vV2=tasaVentaLocal(p.or,t),vC2=tasaCompraLocal(p.dst,t); tasaV=vV2*vC2; }
+  else if(!isApp(p.or)&&isApp(p.dst)){ tasaC=vV>0?(1/vC)/vV:0; const vV2=tasaVentaLocal(p.or,t),vC2=tasaCompraLocal(p.dst,t); tasaV=vC2>0?(1/vV2)/vC2:0; }
+  else if(isApp(p.or)&&isApp(p.dst)){ tasaC=vC>0&&vV>0?vC/vV:0; const vV2=tasaVentaLocal(p.or,t),vC2=tasaVentaLocal(p.dst,t); tasaV=vC2>0?vV2/vC2:0; }
+  else{ tasaC=vC>0?vV/vC:0; const vV2=tasaVentaLocal(p.or,t),vC2=tasaVentaLocal(p.dst,t); tasaV=vV2>0?vC2/vV2:0; }
+  const pct=tasaC>0?((tasaV/tasaC-1)*100):0;
+  return{vC,vV,tasaC,tasaV,pct};
+}
+
+function renderEnviosTasas(){
+  const t=dbTasas.registros.find(r=>r.fecha===dHoy())||null;
+  document.getElementById('env-nota').style.display=t?'none':'block';
+  document.getElementById('env-card').style.display=t?'block':'none';
+  if(!t) return;
+  document.getElementById('env-fecha').textContent=fmtF(t.fecha);
+  let prevGrupo='', html='';
+  PARES.forEach(p=>{
+    const gr=GRUPOS[p.or]||p.or;
+    if(gr!==prevGrupo){ html+=`<tr class="sep-row"><td colspan="8">${gr}</td></tr>`; prevGrupo=gr; }
+    const r=calcPar(p,t);
+    const col=OR_COLOR[p.or]||'var(--azul)', bg=OR_BG[p.or]||'#eef2ff';
+    const dCol=OR_COLOR[p.dst]||'var(--muted)', dBg=OR_BG[p.dst]||'#f1f1f5';
+    const pctCls=r.pct<0?'tc':r.pct>10?'tkv':'tp';
+    html+=`<tr>
+      <td style="color:${col}">${p.label}</td>
+      <td><span class="badge" style="background:${bg};color:${col}">${p.or}</span></td>
+      <td class="tc">${r.vC?fmtN_t(r.vC):'—'}</td>
+      <td><span class="badge" style="background:${dBg};color:${dCol}">${p.dst}</span></td>
+      <td class="tv">${r.vV?fmtN_t(r.vV):'—'}</td>
+      <td class="tk">${r.tasaC?fmtT_n(r.tasaC):'—'}</td>
+      <td class="${pctCls}">${r.pct?r.pct.toFixed(1)+'%':'—'}</td>
+      <td class="tkv">${r.tasaV?fmtT_n(r.tasaV):'—'}</td>
+    </tr>`;
+  });
+  document.getElementById('tbody-env').innerHTML=html;
+}
+
+// ── HISTORIAL ──
+const MONS_T=[
+  {lbl:'🇵🇪 PEN',c:'penC',v:'penV'},{lbl:'🇻🇪 VES',c:'vesC',v:'vesV'},
+  {lbl:'🇨🇴 COP',c:'copC',v:'copV'},{lbl:'🇨🇱 CLP',c:'clpC',v:'clpV'},
+  {lbl:'💸 ZINLI',c:'zinliC',v:'zinliV'},{lbl:'⚡ ZELLE',c:'zelleC',v:'zelleV'},
+  {lbl:'🟢 USDT',c:'usdtC',v:'usdtV'},{lbl:'🇪🇺 EUR',c:'eurC',v:'eurV'},
+];
+
+function renderHistorialTasas(){
+  const lista=[...dbTasas.registros].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const cont=document.getElementById('hist-cont');
+  if(!lista.length){ cont.innerHTML='<div class="empty">No hay tasas registradas aún.</div>'; return; }
+  cont.innerHTML=lista.map((r,i)=>{
+    const esHoy=r.fecha===dHoy();
+    const chips=MONS_T.map(m=>{
+      const hC=r[m.c]!==undefined, hV=r[m.v]!==undefined;
+      if(!hC&&!hV) return '';
+      return `<div class="chip">
+        <div class="chip-mon">${m.lbl}</div>
+        <div class="chip-vals">
+          ${hC?`<span class="chip-c">${fmt_t(r[m.c])}</span>`:''}
+          ${hC&&hV?`<span class="chip-sep">·</span>`:''}
+          ${hV?`<span class="chip-v">${fmt_t(r[m.v])}</span>`:''}
+        </div>
+        <div class="chip-lbl">${hC&&hV?'C · V':hC?'compra':'venta'}</div>
+      </div>`;
+    }).join('');
+    return `<div class="hist-item">
+      <div class="hist-header" onclick="togH(this)">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:900;color:var(--azul)">
+          ${esHoy?'<span class="badge b-verde">HOY</span>':''}${fmtF(r.fecha)}
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn-sm" style="color:var(--azul);border-color:#a5b4fc" onclick="event.stopPropagation();loadReg('${r.fecha}')">Cargar</button>
+          <button class="btn-sm" onclick="event.stopPropagation();delReg('${r.fecha}')">✕</button>
+          <span style="color:var(--muted);font-size:12px">▾</span>
+        </div>
+      </div>
+      <div class="hist-body" style="display:${i===0?'block':'none'}">
+        <div class="chips-grid">${chips}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function togH(h){ const b=h.nextElementSibling; b.style.display=b.style.display==='none'?'block':'none'; }
+
+function loadReg(fecha){
+  const r=dbTasas.registros.find(x=>x.fecha===fecha);
+  if(!r) return;
+  setInputsT(r); previewTasas();
+  showTasasPage('t-tasas', document.querySelectorAll('#subnav-tasas .stab')[0]);
+  window.scrollTo(0,0);
+}
+
+function delReg(fecha){
+  if(!confirm('¿Eliminar tasas del '+fmtF(fecha)+'?')) return;
+  dbTasas.registros=dbTasas.registros.filter(r=>r.fecha!==fecha);
+  saveTasasDb(); renderHistorialTasas(); initBarTasas();
+}
+
+// ── INIT TASAS ──
+(()=>{
+  const ul=[...dbTasas.registros].sort((a,b)=>b.fecha.localeCompare(a.fecha))[0];
+  if(ul){ setInputsT(ul); previewTasas(); }
+})();
 </script>
 </body>
 </html>
