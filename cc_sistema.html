@@ -164,6 +164,8 @@ tr:hover td{background:#f5f5ff;}
 .tp{color:var(--am);font-weight:900;}
 .tkv{color:#7c3aed;font-weight:900;}
 tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:5px 10px;border:none;}
+.zr-input{border:1.5px solid var(--border);border-radius:var(--rsm);padding:4px 6px;font-size:13px;font-weight:900;font-family:'Nunito',sans-serif;width:90px;text-align:center;color:var(--texto);background:#fff;outline:none;}
+.zr-input:focus{border-color:var(--azul);}
 </style>
 </head>
 <body>
@@ -207,7 +209,7 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
   <div class="status-item">🇨🇴 COP <strong id="scop">—</strong></div>
   <div class="status-item">🇵🇪 PEN <strong id="spen">—</strong></div>
   <div class="status-item">💸 ZINLI <strong id="szinli">—</strong></div>
-  <div class="status-item">⚡ ZELLE <strong id="szelle">—</strong></div>
+  <div class="status-item">💵 USD BCV <strong id="sdolar">—</strong></div>
 </div>
 
 <div class="main">
@@ -618,7 +620,7 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
         </div>
       </div>
       <div class="sec-title">Apps &amp; Plataformas</div>
-      <div class="g4" style="margin-bottom:0">
+      <div class="g2" style="margin-bottom:0">
         <div class="par-box">
           <div class="par-header"><span class="par-header-flag">💸</span><span class="par-header-name">ZINLI</span></div>
           <div class="par-body">
@@ -627,24 +629,27 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
           </div>
         </div>
         <div class="par-box">
-          <div class="par-header"><span class="par-header-flag">⚡</span><span class="par-header-name">ZELLE / USD</span></div>
-          <div class="par-body">
-            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="zelle-c" placeholder="1.08" step="0.001" oninput="previewTasas()"/></div>
-            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="zelle-v" placeholder="0.97" step="0.001" oninput="previewTasas()"/></div>
-          </div>
-        </div>
-        <div class="par-box">
-          <div class="par-header"><span class="par-header-flag">🟢</span><span class="par-header-name">USDT</span></div>
-          <div class="par-body">
-            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="usdt-c" placeholder="1.00" step="0.001" oninput="previewTasas()"/></div>
-            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="usdt-v" placeholder="0.98" step="0.001" oninput="previewTasas()"/></div>
-          </div>
-        </div>
-        <div class="par-box">
           <div class="par-header"><span class="par-header-flag">🇪🇺</span><span class="par-header-name">EUR — Euro</span></div>
           <div class="par-body">
             <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="eur-c" placeholder="—" step="0.001" oninput="previewTasas()"/></div>
             <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="eur-v" placeholder="—" step="0.001" oninput="previewTasas()"/></div>
+          </div>
+        </div>
+      </div>
+      <div class="sec-title">Tipo de cambio BCV (Bs por unidad)</div>
+      <div class="g2" style="margin-bottom:0">
+        <div class="par-box">
+          <div class="par-header"><span class="par-header-flag">💵</span><span class="par-header-name">Dólar — BCV</span></div>
+          <div class="par-body">
+            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="dolar-c" placeholder="0.00" step="0.01" oninput="previewTasas()"/></div>
+            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="dolar-v" placeholder="0.00" step="0.01" oninput="previewTasas()"/></div>
+          </div>
+        </div>
+        <div class="par-box">
+          <div class="par-header"><span class="par-header-flag">💶</span><span class="par-header-name">Euro — BCV</span></div>
+          <div class="par-body">
+            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="euro-bs-c" placeholder="0.00" step="0.01" oninput="previewTasas()"/></div>
+            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="euro-bs-v" placeholder="0.00" step="0.01" oninput="previewTasas()"/></div>
           </div>
         </div>
       </div>
@@ -1543,9 +1548,9 @@ const FIELDS_T = [
   {id:'cop-c',k:'copC'},{id:'cop-v',k:'copV'},
   {id:'clp-c',k:'clpC'},{id:'clp-v',k:'clpV'},
   {id:'zinli-c',k:'zinliC'},{id:'zinli-v',k:'zinliV'},
-  {id:'zelle-c',k:'zelleC'},{id:'zelle-v',k:'zelleV'},
-  {id:'usdt-c',k:'usdtC'},{id:'usdt-v',k:'usdtV'},
   {id:'eur-c',k:'eurC'},{id:'eur-v',k:'eurV'},
+  {id:'dolar-c',k:'dolarC'},{id:'dolar-v',k:'dolarV'},
+  {id:'euro-bs-c',k:'euroBsC'},{id:'euro-bs-v',k:'euroBsV'},
 ];
 const getInputsT = ()=>{ const t={}; FIELDS_T.forEach(f=>{ const v=parseFloat(document.getElementById(f.id).value); if(!isNaN(v)&&v>0) t[f.k]=v; }); return t; };
 const setInputsT = t=>{ FIELDS_T.forEach(f=>{ document.getElementById(f.id).value=t[f.k]!==undefined?t[f.k]:''; }); };
@@ -1585,8 +1590,8 @@ function previewTasas(){
   const defs=[
     {mon:'🇵🇪 PEN',c:t.penC,v:t.penV},{mon:'🇻🇪 VES',c:t.vesC,v:t.vesV},
     {mon:'🇨🇴 COP',c:t.copC,v:t.copV},{mon:'🇨🇱 CLP',c:t.clpC,v:t.clpV},
-    {mon:'💸 ZINLI',c:t.zinliC,v:t.zinliV},{mon:'⚡ ZELLE',c:t.zelleC,v:t.zelleV},
-    {mon:'🟢 USDT',c:t.usdtC,v:t.usdtV},{mon:'🇪🇺 EUR',c:t.eurC,v:t.eurV},
+    {mon:'💸 ZINLI',c:t.zinliC,v:t.zinliV},{mon:'🇪🇺 EUR',c:t.eurC,v:t.eurV},
+    {mon:'💵 Dólar BCV',c:t.dolarC,v:t.dolarV},{mon:'💶 Euro BCV',c:t.euroBsC,v:t.euroBsV},
   ];
   document.getElementById('preview-chips').innerHTML=defs.map(d=>{
     if(!d.c&&!d.v) return '';
@@ -1616,7 +1621,7 @@ function updateBarTasas(t){
   document.getElementById('scop').textContent=t.copV?fmt_t(t.copV):'—';
   document.getElementById('spen').textContent=t.penV?fmt_t(t.penV):'—';
   document.getElementById('szinli').textContent=t.zinliV?fmt_t(t.zinliV):'—';
-  document.getElementById('szelle').textContent=t.zelleV?fmt_t(t.zelleV):'—';
+  document.getElementById('sdolar').textContent=t.dolarV?fmt_t(t.dolarV):'—';
 }
 
 function initBarTasas(){
@@ -1654,6 +1659,25 @@ function calcPar(p,t){
   return{vC,vV,tasaC,tasaV,pct};
 }
 
+// Tasas Zelle editables en la tabla (persistidas por sesión en localStorage)
+let zelleRows={};
+try{ zelleRows=JSON.parse(localStorage.getItem('cc_zelle_rows')||'{}'); }catch(e){}
+function saveZelleRow(key,side,val){
+  if(!zelleRows[key]) zelleRows[key]={c:'',v:''};
+  zelleRows[key][side]=parseFloat(val)||'';
+  try{ localStorage.setItem('cc_zelle_rows',JSON.stringify(zelleRows)); }catch(e){}
+  // Recalcular y actualizar el % de esa fila
+  const rC=parseFloat(zelleRows[key].c)||0;
+  const rV=parseFloat(zelleRows[key].v)||0;
+  const pct=rC>0?((rV/rC-1)*100):0;
+  const pctEl=document.getElementById('zrpct-'+key);
+  if(pctEl){
+    const cls=pct<0?'tc':pct>10?'tkv':'tp';
+    pctEl.className=cls;
+    pctEl.textContent=rC&&rV?pct.toFixed(1)+'%':'—';
+  }
+}
+
 function renderEnviosTasas(){
   const t=dbTasas.registros.find(r=>r.fecha===dHoy())||null;
   document.getElementById('env-nota').style.display=t?'none':'block';
@@ -1664,20 +1688,39 @@ function renderEnviosTasas(){
   PARES.forEach(p=>{
     const gr=GRUPOS[p.or]||p.or;
     if(gr!==prevGrupo){ html+=`<tr class="sep-row"><td colspan="8">${gr}</td></tr>`; prevGrupo=gr; }
-    const r=calcPar(p,t);
     const col=OR_COLOR[p.or]||'var(--azul)', bg=OR_BG[p.or]||'#eef2ff';
     const dCol=OR_COLOR[p.dst]||'var(--muted)', dBg=OR_BG[p.dst]||'#f1f1f5';
-    const pctCls=r.pct<0?'tc':r.pct>10?'tkv':'tp';
-    html+=`<tr>
-      <td style="color:${col}">${p.label}</td>
-      <td><span class="badge" style="background:${bg};color:${col}">${p.or}</span></td>
-      <td class="tc">${r.vC?fmtN_t(r.vC):'—'}</td>
-      <td><span class="badge" style="background:${dBg};color:${dCol}">${p.dst}</span></td>
-      <td class="tv">${r.vV?fmtN_t(r.vV):'—'}</td>
-      <td class="tk">${r.tasaC?fmtT_n(r.tasaC):'—'}</td>
-      <td class="${pctCls}">${r.pct?r.pct.toFixed(1)+'%':'—'}</td>
-      <td class="tkv">${r.tasaV?fmtT_n(r.tasaV):'—'}</td>
-    </tr>`;
+    const esZelle=p.or==='ZELLE'||p.dst==='ZELLE';
+    if(esZelle){
+      const key=`${p.or}-${p.dst}`;
+      const zr=zelleRows[key]||{};
+      const rC=parseFloat(zr.c)||0, rV=parseFloat(zr.v)||0;
+      const pct=rC>0?((rV/rC-1)*100):0;
+      const pctCls=pct<0?'tc':pct>10?'tkv':'tp';
+      html+=`<tr>
+        <td style="color:${col}">${p.label}</td>
+        <td><span class="badge" style="background:${bg};color:${col}">${p.or}</span></td>
+        <td>—</td>
+        <td><span class="badge" style="background:${dBg};color:${dCol}">${p.dst}</span></td>
+        <td>—</td>
+        <td class="tk"><input class="zr-input" type="number" value="${zr.c||''}" placeholder="0.0000" step="0.0001" oninput="saveZelleRow('${key}','c',this.value)"/></td>
+        <td id="zrpct-${key}" class="${pctCls}">${rC&&rV?pct.toFixed(1)+'%':'—'}</td>
+        <td class="tkv"><input class="zr-input" type="number" value="${zr.v||''}" placeholder="0.0000" step="0.0001" oninput="saveZelleRow('${key}','v',this.value)"/></td>
+      </tr>`;
+    } else {
+      const r=calcPar(p,t);
+      const pctCls=r.pct<0?'tc':r.pct>10?'tkv':'tp';
+      html+=`<tr>
+        <td style="color:${col}">${p.label}</td>
+        <td><span class="badge" style="background:${bg};color:${col}">${p.or}</span></td>
+        <td class="tc">${r.vC?fmtN_t(r.vC):'—'}</td>
+        <td><span class="badge" style="background:${dBg};color:${dCol}">${p.dst}</span></td>
+        <td class="tv">${r.vV?fmtN_t(r.vV):'—'}</td>
+        <td class="tk">${r.tasaC?fmtT_n(r.tasaC):'—'}</td>
+        <td class="${pctCls}">${r.pct?r.pct.toFixed(1)+'%':'—'}</td>
+        <td class="tkv">${r.tasaV?fmtT_n(r.tasaV):'—'}</td>
+      </tr>`;
+    }
   });
   document.getElementById('tbody-env').innerHTML=html;
 }
@@ -1686,8 +1729,8 @@ function renderEnviosTasas(){
 const MONS_T=[
   {lbl:'🇵🇪 PEN',c:'penC',v:'penV'},{lbl:'🇻🇪 VES',c:'vesC',v:'vesV'},
   {lbl:'🇨🇴 COP',c:'copC',v:'copV'},{lbl:'🇨🇱 CLP',c:'clpC',v:'clpV'},
-  {lbl:'💸 ZINLI',c:'zinliC',v:'zinliV'},{lbl:'⚡ ZELLE',c:'zelleC',v:'zelleV'},
-  {lbl:'🟢 USDT',c:'usdtC',v:'usdtV'},{lbl:'🇪🇺 EUR',c:'eurC',v:'eurV'},
+  {lbl:'💸 ZINLI',c:'zinliC',v:'zinliV'},{lbl:'🇪🇺 EUR',c:'eurC',v:'eurV'},
+  {lbl:'💵 Dólar BCV',c:'dolarC',v:'dolarV'},{lbl:'💶 Euro BCV',c:'euroBsC',v:'euroBsV'},
 ];
 
 function renderHistorialTasas(){
