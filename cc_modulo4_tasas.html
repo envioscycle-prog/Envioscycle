@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cycle — Módulo 4: Tasas del Día</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --azul:#1A1AFF;--azul-dark:#0000CC;--cian:#00CFFF;--cian-soft:#e6f9ff;
+  --bg:#F5F7FF;--blanco:#fff;--texto:#0D0D2B;--muted:#5a5a8a;
+  --border:#E0E0F5;--verde:#16a34a;--verde-soft:#dcfce7;
+  --rojo:#dc2626;--rojo-soft:#fee2e2;--am:#d97706;--am-soft:#fef3c7;
+  --radius:14px;--rsm:8px;--pill:100px;
+}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--texto);min-height:100vh;}
+.topbar{background:var(--azul);padding:0 1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;position:sticky;top:0;z-index:100;min-height:56px;box-shadow:0 2px 12px rgba(26,26,255,0.2);}
+.logo-text{font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px;}
+.logo-dot{color:var(--cian);}
+.nav-tabs{display:flex;gap:4px;flex-wrap:wrap;padding:8px 0;margin-left:auto;}
+.tab{padding:6px 14px;border-radius:var(--pill);border:none;background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s;font-family:'Nunito',sans-serif;}
+.tab:hover{background:rgba(255,255,255,0.22);color:#fff;}
+.tab.active{background:var(--cian);color:var(--azul-dark);}
+.status-bar{background:var(--azul-dark);padding:7px 1.5rem;display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12px;font-weight:700;}
+.status-item{display:flex;align-items:center;gap:5px;color:rgba(255,255,255,0.65);}
+.status-item strong{color:#fff;}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#ff6b6b;flex-shrink:0;transition:background 0.3s;}
+.status-dot.ok{background:var(--verde);box-shadow:0 0 6px var(--verde);}
+.main{padding:1.5rem;max-width:1200px;margin:0 auto;}
+.page{display:none;}.page.active{display:block;}
+.page-title{font-size:22px;font-weight:900;color:var(--azul);margin-bottom:4px;}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:1.25rem;font-weight:600;}
+.card{background:var(--blanco);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1.25rem;box-shadow:0 1px 4px rgba(26,26,255,0.06);}
+.card-title{font-size:11px;font-weight:900;color:var(--azul);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1rem;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
+label{font-size:11px;font-weight:800;color:var(--azul);text-transform:uppercase;letter-spacing:0.05em;}
+input,select{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--rsm);font-size:14px;font-family:'Nunito',sans-serif;color:var(--texto);background:var(--bg);outline:none;width:100%;transition:border-color 0.15s;}
+input::placeholder{color:#b0b0cc;}
+input:focus,select:focus{border-color:var(--azul);background:#fff;}
+.btn-primary{background:var(--azul);color:#fff;border:none;border-radius:var(--pill);padding:11px 20px;font-size:14px;font-weight:900;cursor:pointer;width:100%;margin-top:6px;font-family:'Nunito',sans-serif;transition:all 0.15s;}
+.btn-primary:hover{background:var(--azul-dark);}
+.btn-sm{background:#fff;border:1.5px solid var(--border);border-radius:var(--rsm);padding:5px 10px;font-size:12px;cursor:pointer;color:var(--muted);font-family:'Nunito',sans-serif;font-weight:700;transition:all 0.15s;}
+.btn-sm:hover{border-color:var(--azul);color:var(--azul);}
+.btn-danger:hover{background:var(--rojo-soft);color:var(--rojo);border-color:#fca5a5;}
+.badge{display:inline-block;padding:3px 10px;border-radius:var(--pill);font-size:11px;font-weight:800;white-space:nowrap;}
+.b-verde{background:var(--verde-soft);color:var(--verde);}
+.b-rojo{background:var(--rojo-soft);color:var(--rojo);}
+.b-azul{background:#eef2ff;color:var(--azul);}
+.b-am{background:var(--am-soft);color:var(--am);}
+.b-gray{background:#f1f1f5;color:var(--muted);}
+.b-cian{background:var(--cian-soft);color:#007fa3;}
+.empty{text-align:center;padding:2.5rem;color:var(--muted);font-size:14px;font-weight:700;}
+.nota-box{background:var(--am-soft);border:1.5px solid var(--am);border-radius:var(--rsm);padding:10px 14px;font-size:12px;font-weight:700;color:var(--am);margin-bottom:1rem;}
+.sec-title{font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin:16px 0 12px;display:flex;align-items:center;gap:8px;}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── PAR COMPRA/VENTA ── */
+.par-box{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rsm);overflow:hidden;transition:border-color 0.15s;}
+.par-box:focus-within{border-color:var(--azul);}
+.par-header{padding:7px 12px;font-size:11px;font-weight:900;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);background:#fff;}
+.par-header-flag{font-size:15px;}
+.par-header-name{color:var(--azul);}
+.par-body{display:grid;grid-template-columns:1fr 1fr;}
+.par-half{padding:9px 12px;}
+.par-half:first-child{border-right:1px solid var(--border);}
+.par-sublabel{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px;}
+.par-sublabel.c{color:var(--verde);}
+.par-sublabel.v{color:var(--rojo);}
+.par-input{width:100%;border:none;background:transparent;font-size:16px;font-weight:900;font-family:'Nunito',sans-serif;color:var(--texto);outline:none;padding:0;}
+.par-input::placeholder{color:#cccce0;font-weight:600;font-size:14px;}
+.par-input:focus{color:var(--azul);}
+
+/* ── CHIPS RESUMEN ── */
+.chips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:4px;}
+.chip{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rsm);padding:10px 12px;}
+.chip-mon{font-size:11px;font-weight:900;color:var(--azul);margin-bottom:4px;}
+.chip-vals{display:flex;gap:6px;align-items:center;}
+.chip-c{font-size:14px;font-weight:900;color:var(--verde);}
+.chip-v{font-size:14px;font-weight:900;color:var(--rojo);}
+.chip-sep{font-size:11px;color:var(--border);}
+.chip-lbl{font-size:9px;color:var(--muted);font-weight:800;text-transform:uppercase;margin-top:2px;}
+
+/* ── TABLA ENVÍOS ── */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px;}
+thead th{background:#eef2ff;padding:9px 10px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;color:var(--azul);border-bottom:2px solid var(--border);white-space:nowrap;text-align:center;}
+thead th:first-child{text-align:left;min-width:170px;}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s;}
+tbody tr:hover{background:#f5f7ff;}
+tbody td{padding:9px 10px;text-align:center;font-weight:700;font-size:13px;}
+tbody td:first-child{text-align:left;font-weight:900;}
+.tc{color:var(--verde);font-weight:900;}
+.tv{color:var(--rojo);font-weight:900;}
+.tk{color:var(--azul);font-weight:900;}
+.tp{color:var(--am);font-weight:900;}
+.tkv{color:#7c3aed;font-weight:900;}
+tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:5px 10px;border:none;}
+
+/* HISTORIAL */
+.hist-item{border:1.5px solid var(--border);border-radius:var(--rsm);overflow:hidden;margin-bottom:10px;}
+.hist-header{padding:10px 14px;background:#f9f9ff;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;}
+.hist-header:hover{background:#eef2ff;}
+.hist-body{display:none;padding:12px 14px;border-top:1px solid var(--border);}
+
+@media(max-width:750px){
+  .g3,.g4{grid-template-columns:1fr 1fr;}
+  .g2{grid-template-columns:1fr 1fr;}
+  .main{padding:1rem;}
+}
+@media(max-width:480px){
+  .g2,.g3,.g4{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo-text">cycle<span class="logo-dot">.</span></span>
+  <nav class="nav-tabs">
+    <button class="tab active" onclick="showPage('p-tasas',this)">Tasas del día</button>
+    <button class="tab" onclick="showPage('p-envios',this);renderEnvios()">Tabla de envíos</button>
+    <button class="tab" onclick="showPage('p-hist',this);renderHistorial()">Historial</button>
+  </nav>
+</div>
+
+<div class="status-bar">
+  <div class="status-item"><div class="status-dot" id="sdot"></div>&nbsp;<strong id="stxt">Sin tasas hoy</strong></div>
+  <div class="status-item">📅 <strong id="sfecha">—</strong></div>
+  <div class="status-item">🇻🇪 VES <strong id="sves">—</strong></div>
+  <div class="status-item">🇨🇱 CLP <strong id="sclp">—</strong></div>
+  <div class="status-item">🇨🇴 COP <strong id="scop">—</strong></div>
+  <div class="status-item">🇵🇪 PEN <strong id="spen">—</strong></div>
+  <div class="status-item">💸 ZINLI <strong id="szinli">—</strong></div>
+  <div class="status-item">⚡ ZELLE <strong id="szelle">—</strong></div>
+</div>
+
+<div class="main">
+
+<!-- ══ TASAS DEL DÍA ══ -->
+<div id="p-tasas" class="page active">
+  <div class="page-title">Tasas del día</div>
+  <div class="page-sub">Usadas en recargas, streaming y remesas</div>
+
+  <div class="card">
+    <div class="card-title">💱 Monedas locales &nbsp;—&nbsp; compra / venta por 1 USD</div>
+
+    <div class="g4">
+      <div class="par-box">
+        <div class="par-header"><span class="par-header-flag">🇵🇪</span><span class="par-header-name">PEN — Sol</span></div>
+        <div class="par-body">
+          <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="pen-c" placeholder="3.58" step="0.001" oninput="preview()"/></div>
+          <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="pen-v" placeholder="3.45" step="0.001" oninput="preview()"/></div>
+        </div>
+      </div>
+      <div class="par-box">
+        <div class="par-header"><span class="par-header-flag">🇻🇪</span><span class="par-header-name">VES — Bolívar</span></div>
+        <div class="par-body">
+          <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="ves-c" placeholder="632000" step="1" oninput="preview()"/></div>
+          <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="ves-v" placeholder="620000" step="1" oninput="preview()"/></div>
+        </div>
+      </div>
+      <div class="par-box">
+        <div class="par-header"><span class="par-header-flag">🇨🇴</span><span class="par-header-name">COP — Peso col.</span></div>
+        <div class="par-body">
+          <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="cop-c" placeholder="3700" step="1" oninput="preview()"/></div>
+          <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="cop-v" placeholder="3600" step="1" oninput="preview()"/></div>
+        </div>
+      </div>
+      <div class="par-box">
+        <div class="par-header"><span class="par-header-flag">🇨🇱</span><span class="par-header-name">CLP — Peso CL</span></div>
+        <div class="par-body">
+          <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="clp-c" placeholder="930" step="0.1" oninput="preview()"/></div>
+          <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="clp-v" placeholder="918" step="0.1" oninput="preview()"/></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-title">Apps &amp; Plataformas</div>
+
+    <div class="g4" style="margin-bottom:0">
+      <div class="par-box">
+        <div class="par-header"><span class="par-header-flag">💸</span><span class="par-header-name">ZINLI</span></div>
+        <div class="par-body">
+          <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="zinli-c" placeholder="1.06" step="0.001" oninput="preview()"/></div>
+          <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="zinli-v" placeholder="0.98" step="0.001" oninput="preview()"/></div>
+        </div>
+      </div>
+      <div class="par-box">
+        <div class="par-header"><span class="par-header-flag">⚡</span><span class="par-header-name">ZELLE / USD</span></div>
+        <div class="par-body">
+          <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="zelle-c" placeholder="1.08" step="0.001" oninput="preview()"/></div>
+          <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="zelle-v" placeholder="0.97" step="0.001" oninput="preview()"/></div>
+        </div>
+      </div>
+      <div class="par-box">
+        <div class="par-header"><span class="par-header-flag">🟢</span><span class="par-header-name">USDT</span></div>
+        <div class="par-body">
+          <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="usdt-c" placeholder="1.00" step="0.001" oninput="preview()"/></div>
+          <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="usdt-v" placeholder="0.98" step="0.001" oninput="preview()"/></div>
+        </div>
+      </div>
+      <div class="par-box">
+        <div class="par-header"><span class="par-header-flag">🇪🇺</span><span class="par-header-name">EUR — Euro</span></div>
+        <div class="par-body">
+          <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="eur-c" placeholder="—" step="0.001" oninput="preview()"/></div>
+          <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="eur-v" placeholder="—" step="0.001" oninput="preview()"/></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <button class="btn-primary" onclick="guardar()">💾 Guardar tasas del día</button>
+    <button class="btn-primary" style="background:var(--verde)" onclick="cargarUltimas()">↩ Cargar últimas tasas guardadas</button>
+  </div>
+
+  <!-- Preview -->
+  <div id="preview-card" class="card" style="display:none">
+    <div class="card-title">👁 Previsualización</div>
+    <div class="chips-grid" id="preview-chips"></div>
+    <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:6px;text-align:right" id="preview-lbl"></div>
+  </div>
+</div>
+
+<!-- ══ ENVÍOS ══ -->
+<div id="p-envios" class="page">
+  <div class="page-title">Tabla de envíos (remesas)</div>
+  <div class="page-sub">Calculada automáticamente desde las tasas del día</div>
+  <div id="env-nota" class="nota-box" style="display:none">⚠️ No hay tasas guardadas para hoy. Ingresalas en <strong>Tasas del día</strong> primero.</div>
+  <div id="env-card" class="card">
+    <div class="card-title">🌎 Envíos de: <span id="env-fecha" class="badge b-cian" style="margin-left:4px"></span></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:left">ENVÍOS DE</th>
+            <th>ORIGEN</th>
+            <th>V.COMPRA</th>
+            <th>DESTINO</th>
+            <th>V.VENTA</th>
+            <th>TASA COMPRA</th>
+            <th>%</th>
+            <th>TASA VENTA</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-env"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HISTORIAL ══ -->
+<div id="p-hist" class="page">
+  <div class="page-title">Historial de tasas</div>
+  <div class="page-sub">Un registro por día</div>
+  <div class="card"><div id="hist-cont"></div></div>
+</div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════
+const KEY = 'cc_tasas_v2';
+let db = (() => { try{ const d=localStorage.getItem(KEY); return d?JSON.parse(d):{registros:[]}; }catch(e){return{registros:[]};} })();
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){} };
+
+// también expone tasas para otros módulos con clave compartida
+const KEY_SHARED = 'cc_tasas_hoy';
+function saveShared(t){ try{ localStorage.setItem(KEY_SHARED, JSON.stringify(t)); }catch(e){} }
+
+// ═══════════════════════════════════
+// FIELDS
+// ═══════════════════════════════════
+const FIELDS = [
+  {id:'pen-c',k:'penC'},{id:'pen-v',k:'penV'},
+  {id:'ves-c',k:'vesC'},{id:'ves-v',k:'vesV'},
+  {id:'cop-c',k:'copC'},{id:'cop-v',k:'copV'},
+  {id:'clp-c',k:'clpC'},{id:'clp-v',k:'clpV'},
+  {id:'zinli-c',k:'zinliC'},{id:'zinli-v',k:'zinliV'},
+  {id:'zelle-c',k:'zelleC'},{id:'zelle-v',k:'zelleV'},
+  {id:'usdt-c',k:'usdtC'},{id:'usdt-v',k:'usdtV'},
+  {id:'eur-c',k:'eurC'},{id:'eur-v',k:'eurV'},
+];
+
+const getInputs = () => {
+  const t={};
+  FIELDS.forEach(f=>{ const v=parseFloat(document.getElementById(f.id).value); if(!isNaN(v)&&v>0) t[f.k]=v; });
+  return t;
+};
+const setInputs = t => { FIELDS.forEach(f=>{ document.getElementById(f.id).value=t[f.k]!==undefined?t[f.k]:''; }); };
+
+// ═══════════════════════════════════
+// NAV
+// ═══════════════════════════════════
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+// ═══════════════════════════════════
+// GUARDAR
+// ═══════════════════════════════════
+function guardar(){
+  const t = getInputs();
+  if(!Object.keys(t).length){ alert('Ingresá al menos una tasa.'); return; }
+  const hoy = dHoy();
+  const reg = {fecha:hoy,...t};
+  const idx = db.registros.findIndex(r=>r.fecha===hoy);
+  if(idx>=0) db.registros[idx]=reg; else db.registros.push(reg);
+  save();
+  saveShared(reg); // disponible para otros módulos
+  updateBar(reg);
+  preview();
+  document.getElementById('preview-lbl').textContent = 'Guardado: '+fmtF(hoy);
+  alert('✅ Tasas guardadas para hoy.');
+}
+
+function cargarUltimas(){
+  if(!db.registros.length){ alert('No hay tasas previas.'); return; }
+  const u=[...db.registros].sort((a,b)=>b.fecha.localeCompare(a.fecha))[0];
+  setInputs(u); preview();
+}
+
+// ═══════════════════════════════════
+// PREVIEW
+// ═══════════════════════════════════
+function preview(){
+  const t=getInputs();
+  const card=document.getElementById('preview-card');
+  if(!Object.keys(t).length){card.style.display='none';return;}
+  card.style.display='block';
+  const defs=[
+    {mon:'🇵🇪 PEN',c:t.penC,v:t.penV},
+    {mon:'🇻🇪 VES',c:t.vesC,v:t.vesV},
+    {mon:'🇨🇴 COP',c:t.copC,v:t.copV},
+    {mon:'🇨🇱 CLP',c:t.clpC,v:t.clpV},
+    {mon:'💸 ZINLI',c:t.zinliC,v:t.zinliV},
+    {mon:'⚡ ZELLE',c:t.zelleC,v:t.zelleV},
+    {mon:'🟢 USDT',c:t.usdtC,v:t.usdtV},
+    {mon:'🇪🇺 EUR',c:t.eurC,v:t.eurV},
+  ];
+  document.getElementById('preview-chips').innerHTML=defs.map(d=>{
+    if(!d.c&&!d.v) return '';
+    return `<div class="chip">
+      <div class="chip-mon">${d.mon}</div>
+      <div class="chip-vals">
+        ${d.c!==undefined?`<span class="chip-c">${fmt(d.c)}</span>`:''}
+        ${d.c!==undefined&&d.v!==undefined?`<span class="chip-sep">·</span>`:''}
+        ${d.v!==undefined?`<span class="chip-v">${fmt(d.v)}</span>`:''}
+      </div>
+      <div class="chip-lbl">${d.c!==undefined&&d.v!==undefined?'compra · venta':d.c!==undefined?'compra':'venta'}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════
+// STATUS BAR
+// ═══════════════════════════════════
+function updateBar(t){
+  if(!t){
+    document.getElementById('sdot').className='status-dot';
+    document.getElementById('stxt').textContent='Sin tasas hoy';
+    return;
+  }
+  document.getElementById('sdot').className='status-dot ok';
+  document.getElementById('stxt').textContent='Tasas activas';
+  document.getElementById('sfecha').textContent=fmtF(t.fecha||dHoy());
+  document.getElementById('sves').textContent=t.vesV?fmt(t.vesV):'—';
+  document.getElementById('sclp').textContent=t.clpV?fmt(t.clpV):'—';
+  document.getElementById('scop').textContent=t.copV?fmt(t.copV):'—';
+  document.getElementById('spen').textContent=t.penV?fmt(t.penV):'—';
+  document.getElementById('szinli').textContent=t.zinliV?fmt(t.zinliV):'—';
+  document.getElementById('szelle').textContent=t.zelleV?fmt(t.zelleV):'—';
+}
+
+// ═══════════════════════════════════
+// TABLA DE ENVÍOS
+// ═══════════════════════════════════
+/*
+  LÓGICA:
+  Cada par (origen→destino) opera así:
+  - V.COMPRA  = tasa del origen (cuántas unidades de origen por 1 USD)
+  - V.VENTA   = tasa del destino (cuántas unidades de destino por 1 USD)
+  - TASA COMPRA: cuántas unidades de DESTINO recibe el cliente por 1 unidad ORIGEN
+    = (1 / vCompra) * vVenta
+    Ej: CHILE→COLOMBIA: 1 CLP = (1/930) USD = (1/930)*3700 COP ≈ 3.978 COP
+  - TASA VENTA: idem pero usando venta del origen (precio que le cobrás vos en origen)
+    = (1 / vVentaOrigen) * vVentaDestino   (usando las tasas de venta)
+  - PORCENTAJE = (tasaVenta/tasaCompra - 1) * 100
+  
+  Para ZINLI/ZELLE: su tasa es en USD directamente (cuántos USD = 1 unidad app).
+  Su V.COMPRA y V.VENTA = la tasa en USD.
+*/
+
+const PARES = [
+  // ── CHILE ──
+  {label:'CHILE - COLOMBIA',   or:'CLP', dst:'COP'},
+  {label:'CHILE - PERU',       or:'CLP', dst:'PEN'},
+  {label:'CHILE - VENEZUELA',  or:'CLP', dst:'VES'},
+  {label:'CHILE - ZELLE',      or:'CLP', dst:'ZELLE'},
+  // ── COLOMBIA ──
+  {label:'COLOMBIA - CHILE',    or:'COP', dst:'CLP'},
+  {label:'COLOMBIA - PERU',     or:'COP', dst:'PEN'},
+  {label:'COLOMBIA - VENEZUELA',or:'COP', dst:'VES'},
+  {label:'COLOMBIA - ZELLE',    or:'COP', dst:'ZELLE'},
+  // ── PERU ──
+  {label:'PERU - CHILE',       or:'PEN', dst:'CLP'},
+  {label:'PERU - COLOMBIA',    or:'PEN', dst:'COP'},
+  {label:'PERU - VENEZUELA',   or:'PEN', dst:'VES'},
+  {label:'PERU - ZELLE',       or:'PEN', dst:'ZELLE'},
+  // ── VENEZUELA ──
+  {label:'VENEZUELA - CHILE',    or:'VES', dst:'CLP'},
+  {label:'VENEZUELA - COLOMBIA', or:'VES', dst:'COP'},
+  {label:'VENEZUELA - PERÚ',     or:'VES', dst:'PEN'},
+  {label:'VENEZUELA - ZELLE',    or:'VES', dst:'ZELLE'},
+  // ── ZELLE ──
+  {label:'ZELLE - VENEZUELA',  or:'ZELLE', dst:'VES'},
+  {label:'ZELLE - PERU',       or:'ZELLE', dst:'PEN'},
+  {label:'ZELLE - COLOMBIA',   or:'ZELLE', dst:'COP'},
+  {label:'ZELLE - CHILE',      or:'ZELLE', dst:'CLP'},
+];
+
+// Devuelve cuántas unidades de moneda equivalen a 1 USD (tasa de compra = lo que paga el cliente)
+function tasaCompraLocal(m, t){
+  const map={CLP:t.clpC,PEN:t.penC,VES:t.vesC,COP:t.copC,ZELLE:t.zelleC,ZINLI:t.zinliC,USDT:t.usdtC,EUR:t.eurC};
+  return map[m]||0;
+}
+// Tasa de venta local (lo que cobrás vos)
+function tasaVentaLocal(m, t){
+  const map={CLP:t.clpV,PEN:t.penV,VES:t.vesV,COP:t.copV,ZELLE:t.zelleV,ZINLI:t.zinliV,USDT:t.usdtV,EUR:t.eurV};
+  return map[m]||0;
+}
+
+function calcPar(p, t){
+  const vC = tasaCompraLocal(p.or, t);   // V.COMPRA del origen
+  const vV = tasaVentaLocal(p.dst, t);   // V.VENTA del destino
+
+  // Para apps (ZELLE/ZINLI): su "tasa" es cuántos USD valen (ej. ZELLE=1.08 → 1 ZELLE = 1.08 USD)
+  // Para monedas locales: su "tasa" es cuántas unidades por 1 USD
+
+  // TASA COMPRA: unidades destino por 1 unidad origen
+  //   Monedas: tasaC = vV_dst / vC_or  (cuántas destino entrego por cada origen que recibo)
+  //   App→moneda: (1/vC_app_or) USD * vV_dst
+  //   Moneda→app: (1/vC_mon_or) USD * (1/vV_app_dst) = unidades_app ← realmente da fracción
+  let tasaC = 0, tasaV = 0;
+
+  if(isApp(p.or) && !isApp(p.dst)){
+    // Ej ZELLE→VES: 1 ZELLE = vC USD → vC*vV_ves VES
+    tasaC = vC * vV;
+    const vV2 = tasaVentaLocal(p.or,t);
+    const vC2 = tasaCompraLocal(p.dst,t);
+    tasaV = vV2 * vC2;
+  } else if(!isApp(p.or) && isApp(p.dst)){
+    // Ej CLP→ZELLE: 1 CLP = (1/vC_clp) USD → (1/vC_clp)/vV_zelle ZELLE
+    tasaC = vV>0 ? (1/vC) / vV : 0;  // fracción de USD-app por 1 origen
+    const vV2 = tasaVentaLocal(p.or,t);
+    const vC2 = tasaCompraLocal(p.dst,t);
+    tasaV = vC2>0 ? (1/vV2) / vC2 : 0;
+  } else if(isApp(p.or) && isApp(p.dst)){
+    tasaC = vC>0 && vV>0 ? vC/vV : 0;
+    const vV2=tasaVentaLocal(p.or,t), vC2=tasaVentaLocal(p.dst,t);
+    tasaV = vC2>0 ? vV2/vC2 : 0;
+  } else {
+    // moneda→moneda: clásico
+    tasaC = vC>0 ? vV / vC : 0;
+    const vV2=tasaVentaLocal(p.or,t), vC2=tasaVentaLocal(p.dst,t);
+    tasaV = vV2>0 ? vC2 / vV2 : 0;
+  }
+
+  const pct = tasaC>0 ? ((tasaV/tasaC - 1)*100) : 0;
+  return {vC, vV, tasaC, tasaV, pct};
+}
+
+function isApp(m){ return ['ZELLE','ZINLI','USDT'].includes(m); }
+
+const OR_COLOR={CLP:'#1A1AFF',COP:'#d97706',PEN:'#059669',VES:'#dc2626',ZELLE:'#7c3aed'};
+const OR_BG   ={CLP:'#eef2ff',COP:'#fef3c7',PEN:'#d1fae5',VES:'#fee2e2',ZELLE:'#ede9fe'};
+const GRUPOS  ={CLP:'CHILE',COP:'COLOMBIA',PEN:'PERU',VES:'VENEZUELA',ZELLE:'ZELLE'};
+
+function renderEnvios(){
+  const t = db.registros.find(r=>r.fecha===dHoy())||null;
+  document.getElementById('env-nota').style.display = t?'none':'block';
+  document.getElementById('env-card').style.display = t?'block':'none';
+  if(!t) return;
+  document.getElementById('env-fecha').textContent = fmtF(t.fecha);
+
+  let prevGrupo='', html='';
+  PARES.forEach(p=>{
+    const gr = GRUPOS[p.or]||p.or;
+    if(gr!==prevGrupo){
+      html+=`<tr class="sep-row"><td colspan="8">${gr}</td></tr>`;
+      prevGrupo=gr;
+    }
+    const r=calcPar(p,t);
+    const col=OR_COLOR[p.or]||'var(--azul)';
+    const bg =OR_BG[p.or]||'#eef2ff';
+    const dCol=OR_COLOR[p.dst]||'var(--muted)';
+    const dBg =OR_BG[p.dst]||'#f1f1f5';
+    const pctCls=r.pct<0?'tc':r.pct>10?'tkv':'tp';
+    html+=`<tr>
+      <td style="color:${col}">${p.label}</td>
+      <td><span class="badge" style="background:${bg};color:${col}">${p.or}</span></td>
+      <td class="tc">${r.vC?fmtN(r.vC):'—'}</td>
+      <td><span class="badge" style="background:${dBg};color:${dCol}">${p.dst}</span></td>
+      <td class="tv">${r.vV?fmtN(r.vV):'—'}</td>
+      <td class="tk">${r.tasaC?fmtT(r.tasaC):'—'}</td>
+      <td class="${pctCls}">${r.pct?r.pct.toFixed(1)+'%':'—'}</td>
+      <td class="tkv">${r.tasaV?fmtT(r.tasaV):'—'}</td>
+    </tr>`;
+  });
+  document.getElementById('tbody-env').innerHTML=html;
+}
+
+// ═══════════════════════════════════
+// HISTORIAL
+// ═══════════════════════════════════
+const MONS=[
+  {lbl:'🇵🇪 PEN',c:'penC',v:'penV'},
+  {lbl:'🇻🇪 VES',c:'vesC',v:'vesV'},
+  {lbl:'🇨🇴 COP',c:'copC',v:'copV'},
+  {lbl:'🇨🇱 CLP',c:'clpC',v:'clpV'},
+  {lbl:'💸 ZINLI',c:'zinliC',v:'zinliV'},
+  {lbl:'⚡ ZELLE',c:'zelleC',v:'zelleV'},
+  {lbl:'🟢 USDT',c:'usdtC',v:'usdtV'},
+  {lbl:'🇪🇺 EUR',c:'eurC',v:'eurV'},
+];
+
+function renderHistorial(){
+  const lista=[...db.registros].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const cont=document.getElementById('hist-cont');
+  if(!lista.length){cont.innerHTML='<div class="empty">No hay tasas registradas aún.</div>';return;}
+  cont.innerHTML=lista.map((r,i)=>{
+    const esHoy=r.fecha===dHoy();
+    const chips=MONS.map(m=>{
+      const hC=r[m.c]!==undefined,hV=r[m.v]!==undefined;
+      if(!hC&&!hV) return '';
+      return `<div class="chip">
+        <div class="chip-mon">${m.lbl}</div>
+        <div class="chip-vals">
+          ${hC?`<span class="chip-c">${fmt(r[m.c])}</span>`:''}
+          ${hC&&hV?`<span class="chip-sep">·</span>`:''}
+          ${hV?`<span class="chip-v">${fmt(r[m.v])}</span>`:''}
+        </div>
+        <div class="chip-lbl">${hC&&hV?'C · V':hC?'compra':'venta'}</div>
+      </div>`;
+    }).join('');
+    return `<div class="hist-item">
+      <div class="hist-header" onclick="togH(this)">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:900;color:var(--azul)">
+          ${esHoy?'<span class="badge b-verde">HOY</span>':''}
+          ${fmtF(r.fecha)}
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn-sm" style="color:var(--azul);border-color:#a5b4fc" onclick="event.stopPropagation();loadReg('${r.fecha}')">Cargar</button>
+          <button class="btn-sm" onclick="event.stopPropagation();delReg('${r.fecha}')">✕</button>
+          <span style="color:var(--muted);font-size:12px">▾</span>
+        </div>
+      </div>
+      <div class="hist-body" style="display:${i===0?'block':'none'}">
+        <div class="chips-grid">${chips}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function togH(h){ const b=h.nextElementSibling; b.style.display=b.style.display==='none'?'block':'none'; }
+
+function loadReg(fecha){
+  const r=db.registros.find(x=>x.fecha===fecha);
+  if(!r) return;
+  setInputs(r); preview();
+  showPage('p-tasas',document.querySelectorAll('.tab')[0]);
+  window.scrollTo(0,0);
+}
+function delReg(fecha){
+  if(!confirm('¿Eliminar tasas del '+fmtF(fecha)+'?')) return;
+  db.registros=db.registros.filter(r=>r.fecha!==fecha);
+  save(); renderHistorial(); initBar();
+}
+
+// ═══════════════════════════════════
+// UTILS
+// ═══════════════════════════════════
+const fmt  = n=>(!n&&n!==0)||isNaN(n)?'—':Number(n).toLocaleString('es-CL',{maximumFractionDigits:3});
+const fmtN = n=>(!n&&n!==0)||isNaN(n)?'—':Number(n).toLocaleString('es-CL',{maximumFractionDigits:2});
+const fmtT = n=>{
+  if(!n||isNaN(n)) return '—';
+  if(n<0.0001) return Number(n).toFixed(7);
+  if(n<0.01)   return Number(n).toFixed(6);
+  if(n<1)      return Number(n).toFixed(5);
+  if(n>10000)  return Number(n).toLocaleString('es-CL',{maximumFractionDigits:2});
+  return Number(n).toFixed(4);
+};
+const dHoy  = ()=>new Date().toISOString().split('T')[0];
+function fmtF(iso){
+  if(!iso) return '—';
+  const [y,m,d]=iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+function initBar(){
+  const t=db.registros.find(r=>r.fecha===dHoy())||null;
+  updateBar(t);
+}
+
+// Carga última al iniciar
+const ul=[...db.registros].sort((a,b)=>b.fecha.localeCompare(a.fecha))[0];
+if(ul){ setInputs(ul); preview(); }
+initBar();
+</script>
+</body>
+</html>
