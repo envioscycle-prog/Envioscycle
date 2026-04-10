@@ -25,13 +25,6 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--texto);min
 .stab{padding:10px 16px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;border-bottom:3px solid transparent;transition:all 0.15s;margin-bottom:-1.5px;}
 .stab:hover{color:var(--azul);}
 .stab.active{color:var(--azul);border-bottom-color:var(--azul);}
-.tasa-bar{background:var(--azul-dark);padding:8px 1.5rem;font-size:12px;font-weight:700;color:rgba(255,255,255,0.85);border-bottom:1px solid rgba(0,207,255,0.15);}
-.tasa-bar-title{color:var(--cian);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
-.tasa-rows{display:flex;flex-wrap:wrap;gap:6px;}
-.tasa-group{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.07);padding:5px 10px;border-radius:6px;white-space:nowrap;}
-.tasa-group label{color:rgba(255,255,255,0.5);font-size:10px;text-transform:uppercase;letter-spacing:0.04em;}
-.tasa-group input{background:transparent;border:none;border-bottom:1px solid rgba(0,207,255,0.4);color:#fff;padding:1px 4px;font-size:13px;font-weight:800;width:72px;font-family:'Nunito',sans-serif;outline:none;text-align:center;}
-.tasa-sep{width:100%;height:1px;background:rgba(255,255,255,0.08);margin:5px 0;}
 .main{padding:1.5rem;max-width:1200px;margin:0 auto;}
 .page{display:none;}.page.active{display:block;}
 .page-title{font-size:22px;font-weight:900;color:var(--azul);margin-bottom:1.25rem;}
@@ -133,52 +126,6 @@ tr:hover td{background:#f5f5ff;}
   </nav>
 </div>
 
-<div id="tasa-bar" style="display:none">
-<!-- TASAS DEL DÍA -->
-<div class="tasa-bar">
-  <div class="tasa-bar-title">Tasas del día — actualizá cada día</div>
-  <div class="tasa-rows">
-    <!-- Fila 1: tasas base -->
-    <div class="tasa-group">
-      <label>VES venta</label>
-      <input type="number" id="t-ves-v" placeholder="650" oninput="saveTasas();calcGan()"/>
-      <label>Bs/USD</label>
-    </div>
-    <div class="tasa-group">
-      <label>CLP compra</label>
-      <input type="number" id="t-clp-c" placeholder="0.057" oninput="saveTasas();calcGan()"/>
-      <label>Bs</label>
-    </div>
-    <div class="tasa-group">
-      <label>PEN compra</label>
-      <input type="number" id="t-pen-c" placeholder="14.8" oninput="saveTasas();calcGan()"/>
-      <label>Bs</label>
-    </div>
-    <div class="tasa-group">
-      <label>COP compra</label>
-      <input type="number" id="t-cop-c" placeholder="0.013" oninput="saveTasas();calcGan()"/>
-      <label>Bs</label>
-    </div>
-    <div class="tasa-sep"></div>
-    <!-- Fila 2: corredores con Venezuela -->
-    <div class="tasa-group">
-      <label>Chile → Venezuela</label>
-      <input type="number" id="t-clp-ves" placeholder="0.063" oninput="saveTasas();calcGan()"/>
-      <label>CLP/Bs</label>
-    </div>
-    <div class="tasa-group">
-      <label>Perú → Venezuela</label>
-      <input type="number" id="t-pen-ves" placeholder="4.80" oninput="saveTasas();calcGan()"/>
-      <label>PEN/Bs</label>
-    </div>
-    <div class="tasa-group">
-      <label>Colombia → Venezuela</label>
-      <input type="number" id="t-cop-ves" placeholder="0.018" oninput="saveTasas();calcGan()"/>
-      <label>COP/Bs (÷)</label>
-    </div>
-  </div>
-</div>
-</div>
 
 <div class="subnav" id="subnav-dir">
   <button class="stab active" onclick="showDirPage('resumen',this)">Resumen</button>
@@ -604,7 +551,6 @@ function showMod(mod,btn){
   document.getElementById('mod-streaming').style.display=dir?'none':'block';
   document.getElementById('subnav-dir').style.display=dir?'flex':'none';
   document.getElementById('subnav-stream').style.display=dir?'none':'flex';
-  document.getElementById('tasa-bar').style.display=dir?'none':'block';
   document.querySelectorAll('#mod-tabs .tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   if(dir)renderResumen();
@@ -909,18 +855,32 @@ renderResumen();
 function saveStream(){try{localStorage.setItem('cc_stream4',JSON.stringify(dbStream));}catch(e){}}
 
 // ── TASAS ──
+// Lee de cc_tasas_hoy (Módulo Tasas). Fallback a dbStream.tasas si no hay datos.
 function getTasas(){
-  return {
-    vesV:  parseFloat(document.getElementById('t-ves-v').value)  || dbStream.tasas.vesV  || 650,
-    clpC:  parseFloat(document.getElementById('t-clp-c').value)  || dbStream.tasas.clpC  || 0.057,
-    penC:  parseFloat(document.getElementById('t-pen-c').value)  || dbStream.tasas.penC  || 14.8,
-    copC:  parseFloat(document.getElementById('t-cop-c').value)  || dbStream.tasas.copC  || 0.013,
-    clpVes:parseFloat(document.getElementById('t-clp-ves').value)|| dbStream.tasas.clpVes|| 0.063,
-    penVes:parseFloat(document.getElementById('t-pen-ves').value)|| dbStream.tasas.penVes|| 4.80,
-    copVes:parseFloat(document.getElementById('t-cop-ves').value)|| dbStream.tasas.copVes|| 0.018,
+  let hoy=null;
+  try{const d=localStorage.getItem('cc_tasas_hoy');if(d)hoy=JSON.parse(d);}catch(e){}
+  if(hoy&&hoy.ves&&hoy.clp&&hoy.pen&&hoy.cop){
+    const vesV=hoy.ves.v||0;
+    return{
+      vesV:   vesV,
+      clpC:   hoy.clp.c||0,
+      penC:   hoy.pen.c||0,
+      copC:   hoy.cop.c||0,
+      clpVes: (vesV&&hoy.clp.v)?vesV/hoy.clp.v:0,
+      penVes: (vesV&&hoy.pen.v)?vesV/hoy.pen.v:0,
+      copVes: vesV?(hoy.cop.v/vesV):0,
+    };
+  }
+  return{
+    vesV:   dbStream.tasas.vesV  ||650,
+    clpC:   dbStream.tasas.clpC  ||900,
+    penC:   dbStream.tasas.penC  ||3.7,
+    copC:   dbStream.tasas.copC  ||4000,
+    clpVes: dbStream.tasas.clpVes||0.063,
+    penVes: dbStream.tasas.penVes||4.80,
+    copVes: dbStream.tasas.copVes||0.018,
   };
 }
-function saveTasas(){dbStream.tasas=getTasas();saveStream();}
 
 // Convierte monto de cualquier moneda a BS
 // VES: usa VES venta (cuántos BS por cada USD/unidad)
@@ -1362,14 +1322,6 @@ function exportCSV(){
 }
 
 // ── INIT ──
-const t=dbStream.tasas;
-document.getElementById('t-ves-v').value=t.vesV||650;
-document.getElementById('t-clp-c').value=t.clpC||0.057;
-document.getElementById('t-pen-c').value=t.penC||14.8;
-document.getElementById('t-cop-c').value=t.copC||0.013;
-document.getElementById('t-clp-ves').value=t.clpVes||0.063;
-document.getElementById('t-pen-ves').value=t.penVes||4.80;
-document.getElementById('t-cop-ves').value=t.copVes||0.018;
 renderDash();renderTarifario();
 </script>
 </body>
