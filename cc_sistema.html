@@ -669,6 +669,19 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
   <div id="t-envios" class="page">
     <div class="page-title">Tabla de envíos (remesas)</div>
     <div class="page-sub">Calculada automáticamente desde las tasas del día</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap">
+      <span style="font-size:12px;font-weight:800;color:var(--azul)">% Margen de venta:</span>
+      <select id="envios-pct" onchange="saveEnviosPct();renderEnviosTasas()" style="width:auto;padding:6px 10px;font-size:13px;font-weight:800;border:1.5px solid var(--border);border-radius:var(--rsm);font-family:'Nunito',sans-serif;cursor:pointer">
+        <option value="1">1%</option><option value="2">2%</option><option value="3">3%</option>
+        <option value="4">4%</option><option value="5">5%</option><option value="6">6%</option>
+        <option value="7">7%</option><option value="8">8%</option><option value="9">9%</option>
+        <option value="10">10%</option><option value="11">11%</option><option value="12">12%</option>
+        <option value="13">13%</option><option value="14">14%</option><option value="15">15%</option>
+        <option value="16">16%</option><option value="17">17%</option><option value="18">18%</option>
+        <option value="19">19%</option><option value="20">20%</option>
+      </select>
+      <span id="envios-pct-lbl" style="font-size:11px;color:var(--muted);font-weight:700"></span>
+    </div>
     <div id="env-nota" class="nota-box-tasas" style="display:none">⚠️ No hay tasas guardadas para hoy. Ingresalas en <strong>Tasas del día</strong> primero.</div>
     <div id="env-card" class="card">
       <div class="card-title">🌎 Envíos de: <span id="env-fecha" class="badge b-cian" style="margin-left:4px"></span></div>
@@ -1659,31 +1672,39 @@ function calcPar(p,t){
   return{vC,vV,tasaC,tasaV,pct};
 }
 
-// Tasas Zelle editables en la tabla (persistidas por sesión en localStorage)
+// ── MARGEN ENVÍOS ──
+let enviosPct=parseInt(localStorage.getItem('cc_envios_pct')||'5');
+function saveEnviosPct(){
+  enviosPct=parseInt(document.getElementById('envios-pct').value)||5;
+  try{ localStorage.setItem('cc_envios_pct',String(enviosPct)); }catch(e){}
+}
+
+// Tasas Zelle: solo compra editable; venta = compra * (1 + pct/100)
 let zelleRows={};
 try{ zelleRows=JSON.parse(localStorage.getItem('cc_zelle_rows')||'{}'); }catch(e){}
-function saveZelleRow(key,side,val){
-  if(!zelleRows[key]) zelleRows[key]={c:'',v:''};
-  zelleRows[key][side]=parseFloat(val)||'';
+function saveZelleRow(key,val){
+  zelleRows[key]=parseFloat(val)||0;
   try{ localStorage.setItem('cc_zelle_rows',JSON.stringify(zelleRows)); }catch(e){}
-  // Recalcular y actualizar el % de esa fila
-  const rC=parseFloat(zelleRows[key].c)||0;
-  const rV=parseFloat(zelleRows[key].v)||0;
-  const pct=rC>0?((rV/rC-1)*100):0;
+  // Actualizar venta y % de esa fila sin re-render
+  const rC=zelleRows[key]||0;
+  const pct=enviosPct;
+  const tasaV=rC>0?rC*(1+pct/100):0;
+  const vEl=document.getElementById('zrv-'+key);
   const pctEl=document.getElementById('zrpct-'+key);
-  if(pctEl){
-    const cls=pct<0?'tc':pct>10?'tkv':'tp';
-    pctEl.className=cls;
-    pctEl.textContent=rC&&rV?pct.toFixed(1)+'%':'—';
-  }
+  if(vEl) vEl.textContent=tasaV?fmtT_n(tasaV):'—';
+  if(pctEl){ pctEl.className='tp'; pctEl.textContent=rC?pct.toFixed(1)+'%':'—'; }
 }
 
 function renderEnviosTasas(){
   const t=dbTasas.registros.find(r=>r.fecha===dHoy())||null;
   document.getElementById('env-nota').style.display=t?'none':'block';
   document.getElementById('env-card').style.display=t?'block':'none';
+  // Sincronizar selector con valor guardado
+  const sel=document.getElementById('envios-pct');
+  if(sel){ sel.value=enviosPct; }
   if(!t) return;
   document.getElementById('env-fecha').textContent=fmtF(t.fecha);
+  const pct=enviosPct;
   let prevGrupo='', html='';
   PARES.forEach(p=>{
     const gr=GRUPOS[p.or]||p.or;
@@ -1693,23 +1714,21 @@ function renderEnviosTasas(){
     const esZelle=p.or==='ZELLE'||p.dst==='ZELLE';
     if(esZelle){
       const key=`${p.or}-${p.dst}`;
-      const zr=zelleRows[key]||{};
-      const rC=parseFloat(zr.c)||0, rV=parseFloat(zr.v)||0;
-      const pct=rC>0?((rV/rC-1)*100):0;
-      const pctCls=pct<0?'tc':pct>10?'tkv':'tp';
+      const tasaC=zelleRows[key]||0;
+      const tasaV=tasaC>0?tasaC*(1+pct/100):0;
       html+=`<tr>
         <td style="color:${col}">${p.label}</td>
         <td><span class="badge" style="background:${bg};color:${col}">${p.or}</span></td>
         <td>—</td>
         <td><span class="badge" style="background:${dBg};color:${dCol}">${p.dst}</span></td>
         <td>—</td>
-        <td class="tk"><input class="zr-input" type="number" value="${zr.c||''}" placeholder="0.0000" step="0.0001" oninput="saveZelleRow('${key}','c',this.value)"/></td>
-        <td id="zrpct-${key}" class="${pctCls}">${rC&&rV?pct.toFixed(1)+'%':'—'}</td>
-        <td class="tkv"><input class="zr-input" type="number" value="${zr.v||''}" placeholder="0.0000" step="0.0001" oninput="saveZelleRow('${key}','v',this.value)"/></td>
+        <td class="tk"><input class="zr-input" type="number" value="${tasaC||''}" placeholder="0.0000" step="0.0001" oninput="saveZelleRow('${key}',this.value)"/></td>
+        <td id="zrpct-${key}" class="tp">${tasaC?pct.toFixed(1)+'%':'—'}</td>
+        <td id="zrv-${key}" class="tkv">${tasaV?fmtT_n(tasaV):'—'}</td>
       </tr>`;
     } else {
       const r=calcPar(p,t);
-      const pctCls=r.pct<0?'tc':r.pct>10?'tkv':'tp';
+      const tasaV=r.tasaC>0?r.tasaC*(1+pct/100):0;
       html+=`<tr>
         <td style="color:${col}">${p.label}</td>
         <td><span class="badge" style="background:${bg};color:${col}">${p.or}</span></td>
@@ -1717,8 +1736,8 @@ function renderEnviosTasas(){
         <td><span class="badge" style="background:${dBg};color:${dCol}">${p.dst}</span></td>
         <td class="tv">${r.vV?fmtN_t(r.vV):'—'}</td>
         <td class="tk">${r.tasaC?fmtT_n(r.tasaC):'—'}</td>
-        <td class="${pctCls}">${r.pct?r.pct.toFixed(1)+'%':'—'}</td>
-        <td class="tkv">${r.tasaV?fmtT_n(r.tasaV):'—'}</td>
+        <td class="tp">${r.tasaC?pct.toFixed(1)+'%':'—'}</td>
+        <td class="tkv">${tasaV?fmtT_n(tasaV):'—'}</td>
       </tr>`;
     }
   });
