@@ -166,6 +166,8 @@ tr:hover td{background:#f5f5ff;}
 tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:5px 10px;border:none;}
 .zr-input{border:1.5px solid var(--border);border-radius:var(--rsm);padding:4px 6px;font-size:13px;font-weight:900;font-family:'Nunito',sans-serif;width:90px;text-align:center;color:var(--texto);background:#fff;outline:none;}
 .zr-input:focus{border-color:var(--azul);}
+.pct-input{border:1.5px solid var(--border);border-radius:var(--rsm);padding:3px 4px;font-size:12px;font-weight:900;font-family:'Nunito',sans-serif;width:48px;text-align:center;color:var(--am);background:#fff;outline:none;}
+.pct-input:focus{border-color:var(--am);}
 </style>
 </head>
 <body>
@@ -628,28 +630,19 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
             <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="zinli-v" placeholder="0.98" step="0.001" oninput="previewTasas()"/></div>
           </div>
         </div>
-        <div class="par-box">
-          <div class="par-header"><span class="par-header-flag">🇪🇺</span><span class="par-header-name">EUR — Euro</span></div>
-          <div class="par-body">
-            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="eur-c" placeholder="—" step="0.001" oninput="previewTasas()"/></div>
-            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="eur-v" placeholder="—" step="0.001" oninput="previewTasas()"/></div>
-          </div>
-        </div>
       </div>
       <div class="sec-title">Tipo de cambio BCV (Bs por unidad)</div>
       <div class="g2" style="margin-bottom:0">
         <div class="par-box">
           <div class="par-header"><span class="par-header-flag">💵</span><span class="par-header-name">Dólar — BCV</span></div>
           <div class="par-body">
-            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="dolar-c" placeholder="0.00" step="0.01" oninput="previewTasas()"/></div>
-            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="dolar-v" placeholder="0.00" step="0.01" oninput="previewTasas()"/></div>
+            <div style="width:100%"><div class="par-sublabel c">Bs por 1 USD</div><input class="par-input" type="number" id="dolar-bcv" placeholder="0.00" step="0.01" style="width:100%" oninput="previewTasas()"/></div>
           </div>
         </div>
         <div class="par-box">
           <div class="par-header"><span class="par-header-flag">💶</span><span class="par-header-name">Euro — BCV</span></div>
           <div class="par-body">
-            <div class="par-half"><div class="par-sublabel c">Compra</div><input class="par-input" type="number" id="euro-bs-c" placeholder="0.00" step="0.01" oninput="previewTasas()"/></div>
-            <div class="par-half"><div class="par-sublabel v">Venta</div><input class="par-input" type="number" id="euro-bs-v" placeholder="0.00" step="0.01" oninput="previewTasas()"/></div>
+            <div style="width:100%"><div class="par-sublabel c">Bs por 1 EUR</div><input class="par-input" type="number" id="euro-bs-bcv" placeholder="0.00" step="0.01" style="width:100%" oninput="previewTasas()"/></div>
           </div>
         </div>
       </div>
@@ -669,19 +662,6 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
   <div id="t-envios" class="page">
     <div class="page-title">Tabla de envíos (remesas)</div>
     <div class="page-sub">Calculada automáticamente desde las tasas del día</div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap">
-      <span style="font-size:12px;font-weight:800;color:var(--azul)">% Margen de venta:</span>
-      <select id="envios-pct" onchange="saveEnviosPct();renderEnviosTasas()" style="width:auto;padding:6px 10px;font-size:13px;font-weight:800;border:1.5px solid var(--border);border-radius:var(--rsm);font-family:'Nunito',sans-serif;cursor:pointer">
-        <option value="1">1%</option><option value="2">2%</option><option value="3">3%</option>
-        <option value="4">4%</option><option value="5">5%</option><option value="6">6%</option>
-        <option value="7">7%</option><option value="8">8%</option><option value="9">9%</option>
-        <option value="10">10%</option><option value="11">11%</option><option value="12">12%</option>
-        <option value="13">13%</option><option value="14">14%</option><option value="15">15%</option>
-        <option value="16">16%</option><option value="17">17%</option><option value="18">18%</option>
-        <option value="19">19%</option><option value="20">20%</option>
-      </select>
-      <span id="envios-pct-lbl" style="font-size:11px;color:var(--muted);font-weight:700"></span>
-    </div>
     <div id="env-nota" class="nota-box-tasas" style="display:none">⚠️ No hay tasas guardadas para hoy. Ingresalas en <strong>Tasas del día</strong> primero.</div>
     <div id="env-card" class="card">
       <div class="card-title">🌎 Envíos de: <span id="env-fecha" class="badge b-cian" style="margin-left:4px"></span></div>
@@ -1561,9 +1541,8 @@ const FIELDS_T = [
   {id:'cop-c',k:'copC'},{id:'cop-v',k:'copV'},
   {id:'clp-c',k:'clpC'},{id:'clp-v',k:'clpV'},
   {id:'zinli-c',k:'zinliC'},{id:'zinli-v',k:'zinliV'},
-  {id:'eur-c',k:'eurC'},{id:'eur-v',k:'eurV'},
-  {id:'dolar-c',k:'dolarC'},{id:'dolar-v',k:'dolarV'},
-  {id:'euro-bs-c',k:'euroBsC'},{id:'euro-bs-v',k:'euroBsV'},
+  {id:'dolar-bcv',k:'dolarBcv'},
+  {id:'euro-bs-bcv',k:'euroBsBcv'},
 ];
 const getInputsT = ()=>{ const t={}; FIELDS_T.forEach(f=>{ const v=parseFloat(document.getElementById(f.id).value); if(!isNaN(v)&&v>0) t[f.k]=v; }); return t; };
 const setInputsT = t=>{ FIELDS_T.forEach(f=>{ document.getElementById(f.id).value=t[f.k]!==undefined?t[f.k]:''; }); };
@@ -1604,8 +1583,8 @@ function previewTasas(){
   const defs=[
     {mon:'🇵🇪 PEN',c:t.penC,v:t.penV},{mon:'🇻🇪 VES',c:t.vesC,v:t.vesV},
     {mon:'🇨🇴 COP',c:t.copC,v:t.copV},{mon:'🇨🇱 CLP',c:t.clpC,v:t.clpV},
-    {mon:'💸 ZINLI',c:t.zinliC,v:t.zinliV},{mon:'🇪🇺 EUR',c:t.eurC,v:t.eurV},
-    {mon:'💵 Dólar BCV',c:t.dolarC,v:t.dolarV},{mon:'💶 Euro BCV',c:t.euroBsC,v:t.euroBsV},
+    {mon:'💸 ZINLI',c:t.zinliC,v:t.zinliV},
+    {mon:'💵 Dólar BCV',c:t.dolarBcv},{mon:'💶 Euro BCV',c:t.euroBsBcv},
   ];
   document.getElementById('preview-chips').innerHTML=defs.map(d=>{
     if(!d.c&&!d.v) return '';
@@ -1648,10 +1627,10 @@ const PARES=[
   {label:'CHILE - COLOMBIA',or:'CLP',dst:'COP',dec:2,op:'-'},
   {label:'CHILE - PERU',or:'CLP',dst:'PEN',dec:5,op:'-'},
   {label:'CHILE - VENEZUELA',or:'CLP',dst:'VES',dec:4,op:'-'},
-  {label:'CHILE - ZELLE',or:'CLP',dst:'ZELLE',dec:3,op:'+'},
+  {label:'CHILE - ZELLE',or:'CLP',dst:'ZELLE',dec:0,op:'+'},
   {label:'COLOMBIA - CHILE',or:'COP',dst:'CLP',dec:3,op:'-'},
   {label:'COLOMBIA - PERU',or:'COP',dst:'PEN',dec:5,op:'-'},
-  {label:'COLOMBIA - VENEZUELA',or:'COP',dst:'VES',dec:3,op:'+'},
+  {label:'COLOMBIA - VENEZUELA',or:'COP',dst:'VES',dec:2,op:'+',calcC:(t)=>t.copC&&t.vesV?t.copC/t.vesV:0},
   {label:'COLOMBIA - ZELLE',or:'COP',dst:'ZELLE',dec:0,op:'+'},
   {label:'PERU - CHILE',or:'PEN',dst:'CLP',dec:0,op:'-'},
   {label:'PERU - COLOMBIA',or:'PEN',dst:'COP',dec:0,op:'-'},
@@ -1661,7 +1640,7 @@ const PARES=[
   {label:'VENEZUELA - COLOMBIA',or:'VES',dst:'COP',dec:2,op:'-'},
   {label:'VENEZUELA - PERÚ',or:'VES',dst:'PEN',dec:5,op:'-'},
   {label:'VENEZUELA - ZELLE',or:'VES',dst:'ZELLE',dec:5,op:'-'},
-  {label:'ZELLE - VENEZUELA',or:'ZELLE',dst:'VES',dec:4,op:'-'},
+  {label:'ZELLE - VENEZUELA',or:'ZELLE',dst:'VES',dec:0,op:'-'},
   {label:'ZELLE - PERU',or:'ZELLE',dst:'PEN',dec:2,op:'-'},
   {label:'ZELLE - COLOMBIA',or:'ZELLE',dst:'COP',dec:0,op:'-'},
   {label:'ZELLE - CHILE',or:'ZELLE',dst:'CLP',dec:0,op:'-'},
@@ -1675,7 +1654,8 @@ function tasaVentaLocal(m,t){ const map={CLP:t.clpV,PEN:t.penV,VES:t.vesV,COP:t.
 function calcPar(p,t){
   const vC=tasaCompraLocal(p.or,t), vV=tasaVentaLocal(p.dst,t);
   let tasaC=0, tasaV=0;
-  if(isApp(p.or)&&!isApp(p.dst)){ tasaC=vC*vV; const vV2=tasaVentaLocal(p.or,t),vC2=tasaCompraLocal(p.dst,t); tasaV=vV2*vC2; }
+  if(p.calcC){ tasaC=p.calcC(t); }
+  else if(isApp(p.or)&&!isApp(p.dst)){ tasaC=vC*vV; const vV2=tasaVentaLocal(p.or,t),vC2=tasaCompraLocal(p.dst,t); tasaV=vV2*vC2; }
   else if(!isApp(p.or)&&isApp(p.dst)){ tasaC=vV>0?(1/vC)/vV:0; const vV2=tasaVentaLocal(p.or,t),vC2=tasaCompraLocal(p.dst,t); tasaV=vC2>0?(1/vV2)/vC2:0; }
   else if(isApp(p.or)&&isApp(p.dst)){ tasaC=vC>0&&vV>0?vC/vV:0; const vV2=tasaVentaLocal(p.or,t),vC2=tasaVentaLocal(p.dst,t); tasaV=vC2>0?vV2/vC2:0; }
   else{ tasaC=vC>0?vV/vC:0; const vV2=tasaVentaLocal(p.or,t),vC2=tasaVentaLocal(p.dst,t); tasaV=vV2>0?vC2/vV2:0; }
@@ -1683,53 +1663,59 @@ function calcPar(p,t){
   return{vC,vV,tasaC,tasaV,pct};
 }
 
-// ── MARGEN ENVÍOS ──
-let enviosPct=parseInt(localStorage.getItem('cc_envios_pct')||'5');
-function saveEnviosPct(){
-  enviosPct=parseInt(document.getElementById('envios-pct').value)||5;
-  try{ localStorage.setItem('cc_envios_pct',String(enviosPct)); }catch(e){}
+// ── MARGEN ENVÍOS (por par) ──
+let enviosPars={};
+try{ enviosPars=JSON.parse(localStorage.getItem('cc_envios_pars')||'{}'); }catch(e){}
+function saveEnviosPar(key,val){
+  enviosPars[key]=parseFloat(val)||0;
+  try{ localStorage.setItem('cc_envios_pars',JSON.stringify(enviosPars)); }catch(e){}
+  const par=PARES.find(p=>`${p.or}-${p.dst}`===key);
+  if(!par) return;
+  const pct=enviosPars[key]||0;
+  const esZelle=par.or==='ZELLE'||par.dst==='ZELLE';
+  let tasaC=0;
+  if(esZelle){ tasaC=zelleRows[key]||0; }
+  else{ const t=dbTasas.registros.find(r=>r.fecha===dHoy())||null; if(!t) return; tasaC=calcPar(par,t).tasaC; }
+  const tasaV=tasaC>0?(par.op==='-'?tasaC*(1-pct/100):tasaC*(1+pct/100)):0;
+  const vEl=document.getElementById('tkv-'+key);
+  if(vEl) vEl.textContent=tasaV?fmtFixed(tasaV,par.dec):'—';
 }
 
-// Tasas Zelle: solo compra editable; venta = compra * (1 + pct/100)
+// Tasas Zelle: solo compra editable; venta = compra * (enviosPars[key]%)
 let zelleRows={};
 try{ zelleRows=JSON.parse(localStorage.getItem('cc_zelle_rows')||'{}'); }catch(e){}
 function saveZelleRow(key,val){
   zelleRows[key]=parseFloat(val)||0;
   try{ localStorage.setItem('cc_zelle_rows',JSON.stringify(zelleRows)); }catch(e){}
-  // Actualizar venta y % de esa fila sin re-render
   const rC=zelleRows[key]||0;
-  const pct=enviosPct;
   const par=PARES.find(p=>`${p.or}-${p.dst}`===key);
   const op=par?par.op:'+';
   const dec=par!=null?par.dec:4;
+  const pct=enviosPars[key]||0;
   const tasaV=rC>0?(op==='-'?rC*(1-pct/100):rC*(1+pct/100)):0;
-  const vEl=document.getElementById('zrv-'+key);
-  const pctEl=document.getElementById('zrpct-'+key);
+  const vEl=document.getElementById('tkv-'+key);
   if(vEl) vEl.textContent=tasaV?fmtFixed(tasaV,dec):'—';
-  if(pctEl){ pctEl.className='tp'; pctEl.textContent=rC?pct.toFixed(1)+'%':'—'; }
 }
 
 function renderEnviosTasas(){
   const t=dbTasas.registros.find(r=>r.fecha===dHoy())||null;
   document.getElementById('env-nota').style.display=t?'none':'block';
   document.getElementById('env-card').style.display=t?'block':'none';
-  // Sincronizar selector con valor guardado
-  const sel=document.getElementById('envios-pct');
-  if(sel){ sel.value=enviosPct; }
   if(!t) return;
   document.getElementById('env-fecha').textContent=fmtF(t.fecha);
-  const pct=enviosPct;
   let prevGrupo='', html='';
   PARES.forEach(p=>{
+    const key=`${p.or}-${p.dst}`;
     const gr=GRUPOS[p.or]||p.or;
     if(gr!==prevGrupo){ html+=`<tr class="sep-row"><td colspan="8">${gr}</td></tr>`; prevGrupo=gr; }
     const col=OR_COLOR[p.or]||'var(--azul)', bg=OR_BG[p.or]||'#eef2ff';
     const dCol=OR_COLOR[p.dst]||'var(--muted)', dBg=OR_BG[p.dst]||'#f1f1f5';
     const esZelle=p.or==='ZELLE'||p.dst==='ZELLE';
+    const rowPct=enviosPars[key]!==undefined?enviosPars[key]:5;
+    const pctInput=`<input class="pct-input" type="number" min="0" max="99" step="0.5" value="${rowPct}" oninput="saveEnviosPar('${key}',this.value)"/>`;
     if(esZelle){
-      const key=`${p.or}-${p.dst}`;
       const tasaC=zelleRows[key]||0;
-      const tasaV=tasaC>0?(p.op==='-'?tasaC*(1-pct/100):tasaC*(1+pct/100)):0;
+      const tasaV=tasaC>0?(p.op==='-'?tasaC*(1-rowPct/100):tasaC*(1+rowPct/100)):0;
       html+=`<tr>
         <td style="color:${col}">${p.label}</td>
         <td><span class="badge" style="background:${bg};color:${col}">${p.or}</span></td>
@@ -1737,12 +1723,12 @@ function renderEnviosTasas(){
         <td><span class="badge" style="background:${dBg};color:${dCol}">${p.dst}</span></td>
         <td>—</td>
         <td class="tk"><input class="zr-input" type="number" value="${tasaC||''}" placeholder="0.0000" step="0.0001" oninput="saveZelleRow('${key}',this.value)"/></td>
-        <td id="zrpct-${key}" class="tp">${tasaC?pct.toFixed(1)+'%':'—'}</td>
-        <td id="zrv-${key}" class="tkv">${tasaV?fmtFixed(tasaV,p.dec):'—'}</td>
+        <td class="tp">${pctInput}</td>
+        <td id="tkv-${key}" class="tkv">${tasaV?fmtFixed(tasaV,p.dec):'—'}</td>
       </tr>`;
     } else {
       const r=calcPar(p,t);
-      const tasaV=r.tasaC>0?(p.op==='-'?r.tasaC*(1-pct/100):r.tasaC*(1+pct/100)):0;
+      const tasaV=r.tasaC>0?(p.op==='-'?r.tasaC*(1-rowPct/100):r.tasaC*(1+rowPct/100)):0;
       html+=`<tr>
         <td style="color:${col}">${p.label}</td>
         <td><span class="badge" style="background:${bg};color:${col}">${p.or}</span></td>
@@ -1750,8 +1736,8 @@ function renderEnviosTasas(){
         <td><span class="badge" style="background:${dBg};color:${dCol}">${p.dst}</span></td>
         <td class="tv">${r.vV?fmtN_t(r.vV):'—'}</td>
         <td class="tk">${r.tasaC?fmtT_n(r.tasaC):'—'}</td>
-        <td class="tp">${r.tasaC?pct.toFixed(1)+'%':'—'}</td>
-        <td class="tkv">${tasaV?fmtFixed(tasaV,p.dec):'—'}</td>
+        <td class="tp">${pctInput}</td>
+        <td id="tkv-${key}" class="tkv">${tasaV?fmtFixed(tasaV,p.dec):'—'}</td>
       </tr>`;
     }
   });
@@ -1762,8 +1748,8 @@ function renderEnviosTasas(){
 const MONS_T=[
   {lbl:'🇵🇪 PEN',c:'penC',v:'penV'},{lbl:'🇻🇪 VES',c:'vesC',v:'vesV'},
   {lbl:'🇨🇴 COP',c:'copC',v:'copV'},{lbl:'🇨🇱 CLP',c:'clpC',v:'clpV'},
-  {lbl:'💸 ZINLI',c:'zinliC',v:'zinliV'},{lbl:'🇪🇺 EUR',c:'eurC',v:'eurV'},
-  {lbl:'💵 Dólar BCV',c:'dolarC',v:'dolarV'},{lbl:'💶 Euro BCV',c:'euroBsC',v:'euroBsV'},
+  {lbl:'💸 ZINLI',c:'zinliC',v:'zinliV'},
+  {lbl:'💵 Dólar BCV',c:'dolarBcv'},{lbl:'💶 Euro BCV',c:'euroBsBcv'},
 ];
 
 function renderHistorialTasas(){
