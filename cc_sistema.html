@@ -1233,18 +1233,30 @@ function renderComisiones(){
   let sh='',dh='';
   vendedores.forEach(v=>{
     const vs=dbStream.registros.filter(r=>r.vendedor===v);
-    const tcUsdt=vs.reduce((s,r)=>s+(r.comUsdt||0),0);
-    const tcNativa=vs.reduce((s,r)=>s+(r.comNativa||0),0);
-    sh+=`<div class="stat"><div class="stat-label">${v}</div><div class="stat-val">${tcUsdt.toFixed(4)} USDT</div><div class="stat-sub">${vs.length} venta${vs.length!==1?'s':''}</div></div>`;
+    // Acumular por moneda nativa; VES/BS → acumular en USDT (el bolívar se devalúa)
+    const totals={};
+    vs.forEach(r=>{
+      const esVes=r.moneda==='VES'||r.moneda==='BS';
+      const cur=esVes?'USDT':r.moneda;
+      const amt=esVes?(r.comUsdt||0):(r.comNativa||0);
+      totals[cur]=(totals[cur]||0)+amt;
+    });
+    const totStr=Object.entries(totals)
+      .filter(([,val])=>val>0)
+      .map(([cur,val])=>`${val.toFixed(cur==='USDT'?4:2)} ${cur}`)
+      .join(' + ')||'—';
+    sh+=`<div class="stat"><div class="stat-label">${v}</div><div class="stat-val" style="font-size:14px;line-height:1.4">${totStr}</div><div class="stat-sub">${vs.length} venta${vs.length!==1?'s':''}</div></div>`;
     dh+=`<div style="margin-bottom:1.25rem">
       <div style="font-size:13px;font-weight:900;padding:8px 0;border-bottom:2px solid var(--azul);color:var(--azul)">${v}</div>
       ${vs.map(r=>{
-        const comLabel=r.moneda==='VES'||r.moneda==='BS'?'Bs':r.moneda;
+        const esVes=r.moneda==='VES'||r.moneda==='BS';
+        const comLabel=esVes?'Bs':r.moneda;
+        const comMostrar=esVes?`${(r.comUsdt||0).toFixed(4)} USDT`:`${(r.comNativa||0).toFixed(2)} ${comLabel}`;
         return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;flex-wrap:wrap;gap:6px">
           <span><strong>${r.cliente}</strong> — ${r.servicio}</span>
           <span style="color:var(--muted);font-size:11px">${r.fecha}</span>
           <span>Cobrado: <strong>${(r.ventaMonto||0).toFixed(2)} ${r.moneda}</strong></span>
-          <span style="color:var(--azul);font-weight:800">Com: ${(r.comNativa||0).toFixed(2)} ${comLabel} / ${(r.comUsdt||0).toFixed(4)} USDT (${r.pct}%)</span>
+          <span style="color:var(--azul);font-weight:800">Com: ${comMostrar} (${r.pct}%)</span>
         </div>`;
       }).join('')}
     </div>`;
