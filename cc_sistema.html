@@ -905,22 +905,6 @@ renderResumen();
 // ══════════════════════════════════════════
 // STREAMING
 // ══════════════════════════════════════════
-let dbStream={
-  registros:[],
-  tarifario:[
-    {id:1,n:'Netflix',c:1740,hist:[{f:'Inicio',m:1740}]},
-    {id:2,n:'Disney+ ESPN',c:870,hist:[{f:'Inicio',m:870}]},
-    {id:3,n:'HBO Max',c:800,hist:[{f:'Inicio',m:800}]},
-    {id:4,n:'Prime Video',c:960,hist:[{f:'Inicio',m:960}]},
-    {id:5,n:'Crunchyroll',c:480,hist:[{f:'Inicio',m:480}]},
-    {id:6,n:'VIX',c:480,hist:[{f:'Inicio',m:480}]},
-    {id:7,n:'Apple TV',c:640,hist:[{f:'Inicio',m:640}]},
-    {id:8,n:'Paramount',c:480,hist:[{f:'Inicio',m:480}]},
-    {id:9,n:'Combo Netflix + 1 pantalla',c:2200,hist:[{f:'Inicio',m:2200}]},
-    {id:10,n:'Combo Netflix + 2 pantallas',c:2600,hist:[{f:'Inicio',m:2600}]},
-  ],
-  tasas:{vesV:650, clpC:0.057, penC:14.8, copC:0.013, clpVes:0.063, penVes:4.80, copVes:0.018}
-};
 
 function saveStream(){try{localStorage.setItem('cc_stream4',JSON.stringify(dbStream));}catch(e){}}
 
