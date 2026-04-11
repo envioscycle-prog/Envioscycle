@@ -1044,68 +1044,73 @@ renderResumen();
 function saveStream(){try{localStorage.setItem('cc_stream4',JSON.stringify(dbStream));}catch(e){}}
 
 // ── TASAS ──
-// Lee de cc_tasas_hoy (Módulo Tasas). Fallback a dbStream.tasas si no hay datos.
-function getTasas(){
-  let hoy=null;
-  try{const d=localStorage.getItem('cc_tasas_hoy');if(d)hoy=JSON.parse(d);}catch(e){}
-  if(hoy&&hoy.ves&&hoy.clp&&hoy.pen&&hoy.cop){
-    const vesV=hoy.ves.v||0;
-    return{
-      vesV:   vesV,
-      clpC:   hoy.clp.c||0,
-      penC:   hoy.pen.c||0,
-      copC:   hoy.cop.c||0,
-      clpVes: (vesV&&hoy.clp.v)?vesV/hoy.clp.v:0,
-      penVes: (vesV&&hoy.pen.v)?vesV/hoy.pen.v:0,
-      copVes: vesV?(hoy.cop.v/vesV):0,
-    };
+// Lee el registro de tasas de hoy del módulo Tasas (formato plano: vesC, vesV, clpC, etc.)
+function _getTRec(){
+  let r=null;
+  try{const d=localStorage.getItem('cc_tasas_hoy');if(d)r=JSON.parse(d);}catch(e){}
+  if(r&&(r.vesV||r.vesC)) return r;
+  if(typeof dbTasas!=='undefined'){
+    const h=dbTasas.registros.find(x=>x.fecha===new Date().toISOString().split('T')[0]);
+    if(h) return h;
   }
-  return{
-    vesV:   dbStream.tasas.vesV  ||650,
-    clpC:   dbStream.tasas.clpC  ||900,
-    penC:   dbStream.tasas.penC  ||3.7,
-    copC:   dbStream.tasas.copC  ||4000,
-    clpVes: dbStream.tasas.clpVes||0.063,
-    penVes: dbStream.tasas.penVes||4.80,
-    copVes: dbStream.tasas.copVes||0.018,
-  };
+  return null;
+}
+// Alias para compatibilidad con tasasUsadas:getTasas() en guardarRegistro
+function getTasas(){ return _getTRec(); }
+
+// Tasa de venta del corredor (PARES) incluyendo margen por par de cc_envios_pars
+function _parVenta(or, dst){
+  const t=_getTRec(); if(!t) return 0;
+  const par=PARES.find(p=>p.or===or&&p.dst===dst); if(!par) return 0;
+  const key=or+'-'+dst;
+  const pct=(typeof enviosPars!=='undefined'&&enviosPars[key]!==undefined)?enviosPars[key]:0;
+  const r=calcPar(par,t);
+  return r.tasaC>0?(par.op==='-'?r.tasaC*(1-pct/100):r.tasaC*(1+pct/100)):0;
 }
 
-// Convierte monto de cualquier moneda a BS
-// VES: usa VES venta (cuántos BS por cada USD/unidad)
-// CLP: usa corredor Chile-Venezuela (cuántos Bs da 1 CLP)
-// PEN: usa corredor Perú-Venezuela
-// COP: usa corredor Colombia-Venezuela
+// Convierte monto de cualquier moneda a Bs usando tasas del módulo Tasas
+// VES/BS : misma moneda, no convierte
+// CLP    : monto × tasa venta CHILE-VENEZUELA (corredor)
+// PEN    : monto × tasa venta PERU-VENEZUELA
+// COP    : monto × tasa venta COLOMBIA-VENEZUELA
+// USD    : monto × zinliC × vesV  (corredor ZINLI-VENEZUELA)
+// USDT   : misma moneda, no convierte
 function toBS(monto, moneda){
-  const t = getTasas();
-  if(moneda==='VES' || moneda==='BS') return monto;           // ya está en Bs
-  if(moneda==='USD')  return monto * t.vesV;                  // USD → Bs
-  if(moneda==='USDT') return monto * t.vesV;                  // USDT → Bs igual que USD por ahora
-  if(moneda==='CLP')  return monto * t.clpVes;                // CLP → Bs (corredor Chile-Venezuela)
-  if(moneda==='PEN')  return monto * t.penVes;                // PEN → Bs (corredor Perú-Venezuela)
-  if(moneda==='COP')  return t.copVes ? monto / t.copVes : 0; // COP ÷ tasa Colombia→Venezuela
+  if(!monto) return 0;
+  if(moneda==='VES'||moneda==='BS') return monto;
+  if(moneda==='USDT') return monto;
+  if(moneda==='CLP') return monto*(_parVenta('CLP','VES')||0);
+  if(moneda==='PEN') return monto*(_parVenta('PEN','VES')||0);
+  if(moneda==='COP') return monto*(_parVenta('COP','VES')||0);
+  if(moneda==='USD'){ const t=_getTRec(); return t?monto*(t.zinliC||0)*(t.vesV||0):0; }
   return monto;
 }
 
-// Ganancia BS → USDT: divide por tasa VES venta
+// Ganancia Bs → USDT: divide por dolarBcv (tasa de compra VES según BCV)
 function ganToUsdt(ganBS){
-  const t=getTasas();
-  return t.vesV ? ganBS / t.vesV : 0;
+  const t=_getTRec();
+  const bcv=t?t.dolarBcv||0:0;
+  return bcv?ganBS/bcv:0;
 }
 
-// Comisión en moneda nativa del cliente y su equivalente en USDT
-// La comisión se calcula sobre el monto cobrado en la moneda original
-// Para convertir a USDT: divide por la tasa COMPRA de esa moneda
+// Comisión en moneda nativa y su equivalente en USDT
+// VES  : comNativa ÷ vesV  (tasa de venta VES)
+// CLP  : comNativa ÷ clpC  (tasa de compra CLP)
+// PEN  : comNativa ÷ penC
+// COP  : comNativa ÷ copC
+// USD  : comNativa ÷ zinliC (tasa de compra Zinli)
+// USDT : es la misma moneda
 function calcComision(ventaMonto, moneda, pct){
-  const t = getTasas();
-  const comNativa = ventaMonto * pct / 100;   // comisión en la moneda del cliente
-  let comUsdt = 0;
-  if(moneda==='VES'||moneda==='BS') comUsdt = comNativa / t.vesV;  // Bs ÷ VES venta
-  if(moneda==='CLP') comUsdt = comNativa / t.clpC;                  // CLP ÷ CLP compra
-  if(moneda==='PEN') comUsdt = comNativa / t.penC;                  // PEN ÷ PEN compra
-  if(moneda==='COP') comUsdt = comNativa / t.copC;                  // COP ÷ COP compra
-  if(moneda==='USD'||moneda==='USDT') comUsdt = comNativa;           // ya en USDT
-  return {comNativa, comUsdt, moneda};
+  const t=_getTRec();
+  const comNativa=ventaMonto*pct/100;
+  let comUsdt=0;
+  if(moneda==='VES'||moneda==='BS'){ const v=t?t.vesV||0:0;   comUsdt=v?comNativa/v:0; }
+  if(moneda==='CLP')               { const v=t?t.clpC||0:0;   comUsdt=v?comNativa/v:0; }
+  if(moneda==='PEN')               { const v=t?t.penC||0:0;   comUsdt=v?comNativa/v:0; }
+  if(moneda==='COP')               { const v=t?t.copC||0:0;   comUsdt=v?comNativa/v:0; }
+  if(moneda==='USD')               { const v=t?t.zinliC||0:0; comUsdt=v?comNativa/v:0; }
+  if(moneda==='USDT')              comUsdt=comNativa;
+  return{comNativa, comUsdt, moneda};
 }
 
 function poblarSelects(){
