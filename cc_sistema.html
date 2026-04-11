@@ -164,6 +164,8 @@ tr:hover td{background:#f5f5ff;}
 .tp{color:var(--am);font-weight:900;}
 .tkv{color:#7c3aed;font-weight:900;}
 tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:5px 10px;border:none;}
+.inv-rec-input{border:none;border-bottom:1.5px solid var(--border);padding:2px 4px;font-size:11px;width:90px;font-family:'Nunito',sans-serif;background:transparent;color:var(--texto);}
+.inv-rec-input:focus{outline:none;border-bottom-color:var(--azul);}
 .zr-input{border:1.5px solid var(--border);border-radius:var(--rsm);padding:4px 6px;font-size:13px;font-weight:900;font-family:'Nunito',sans-serif;width:90px;text-align:center;color:var(--texto);background:#fff;outline:none;}
 .zr-input:focus{border-color:var(--azul);}
 .pct-input{border:1.5px solid var(--border);border-radius:var(--rsm);padding:3px 4px;font-size:12px;font-weight:900;font-family:'Nunito',sans-serif;width:48px;text-align:center;color:var(--am);background:#fff;outline:none;}
@@ -538,7 +540,7 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>N°</th><th>Cliente</th><th>Vendedor</th><th>Servicio</th><th>Plan</th><th>Accesos</th><th>Moneda</th><th>Cobrado</th><th>Venta BS</th><th>Compra BS</th><th>Gan. BS</th><th>Gan. USDT</th><th>Com. nativa</th><th>Com. USDT</th><th>Inicio</th><th>Vence</th><th>Días</th><th>Estatus</th><th></th></tr></thead>
+          <thead><tr><th>N°</th><th>Cliente</th><th>Vendedor</th><th>Servicio</th><th>Plan</th><th>Accesos</th><th>Moneda</th><th>Cobrado</th><th>Venta BS</th><th>Compra BS</th><th>Gan. BS</th><th>Gan. USDT</th><th>Com. nativa</th><th>Com. USDT</th><th>Inicio</th><th>Vence</th><th>Días</th><th>Estatus</th><th>Recordatorio</th><th>Enviado</th><th></th></tr></thead>
           <tbody id="tbody-inv"></tbody>
         </table>
       </div>
@@ -683,8 +685,19 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
   <!-- HISTORIAL -->
   <div id="t-hist" class="page">
     <div class="page-title">Historial de tasas</div>
-    <div class="page-sub">Un registro por día</div>
-    <div class="card"><div id="hist-cont"></div></div>
+    <div class="page-sub">Registro completo de actualizaciones y análisis de variación</div>
+    <div class="card">
+      <div class="card-title">Análisis de variación</div>
+      <div id="hist-var-cont"><div class="empty">Guardá tasas para ver el análisis.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Actualizaciones recientes</div>
+      <div id="hist-upd-cont"><div class="empty">Sin actualizaciones registradas aún.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="cursor:pointer" onclick="const b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none'">Registros por día ▾</div>
+      <div id="hist-cont"></div>
+    </div>
   </div>
 
   </div><!-- /mod-tasas -->
@@ -1370,7 +1383,7 @@ function renderInv(){
   if(fv)rs=rs.filter(r=>r.vendedor===fv);
   if(fe)rs=rs.filter(r=>getEst(getDias(r.vence))===fe);
   const tbody=document.getElementById('tbody-inv');
-  if(!rs.length){tbody.innerHTML='<tr><td colspan="19" class="empty">Sin resultados.</td></tr>';return;}
+  if(!rs.length){tbody.innerHTML='<tr><td colspan="21" class="empty">Sin resultados.</td></tr>';return;}
   let n=0;
   tbody.innerHTML=rs.map(r=>{
     n++;const dias=getDias(r.vence),est=getEst(dias);
@@ -1393,11 +1406,18 @@ function renderInv(){
       <td style="font-size:11px;white-space:nowrap">${r.vence||'—'}</td>
       <td><span class="badge ${bCls(est)}">${dias!==null?dias+'d':'—'}</span></td>
       <td><span class="badge ${bCls(est)}">${est}</span></td>
+      <td><input class="inv-rec-input" type="text" value="${r.recordatorio||''}" placeholder="—" oninput="saveInvField(${r.id},'recordatorio',this.value)"/></td>
+      <td style="text-align:center"><input type="checkbox" ${r.enviado?'checked':''} onchange="saveInvField(${r.id},'enviado',this.checked)"/></td>
       <td><div style="display:flex;gap:4px">
         <button class="btn-sm btn-edit" onclick="editar(${r.id})">Editar</button>
         <button class="btn-sm btn-danger" onclick="eliminar(${r.id})">X</button>
       </div></td></tr>`;
   }).join('');
+}
+
+function saveInvField(id,field,val){
+  const r=dbStream.registros.find(x=>x.id===id);
+  if(r){r[field]=val;saveStream();}
 }
 
 // ── ALERTAS ──
@@ -1568,6 +1588,12 @@ function guardarTasas(){
   if(idx>=0) dbTasas.registros[idx]=reg; else dbTasas.registros.push(reg);
   saveTasasDb();
   saveShared(reg);
+  // Registrar en historial intradiario con timestamp exacto
+  const ts=new Date().toISOString();
+  let _hist=[];
+  try{_hist=JSON.parse(localStorage.getItem('cc_tasas_historial')||'[]');}catch(e){}
+  _hist.push({ts,...t});
+  try{localStorage.setItem('cc_tasas_historial',JSON.stringify(_hist));}catch(e){}
   updateBarTasas(reg);
   previewTasas();
   document.getElementById('preview-lbl').textContent='Guardado: '+fmtF(hoy);
@@ -1758,6 +1784,86 @@ const MONS_T=[
 ];
 
 function renderHistorialTasas(){
+  // ── Historial intradiario ──
+  let hist=[];
+  try{hist=JSON.parse(localStorage.getItem('cc_tasas_historial')||'[]');}catch(e){}
+  hist.sort((a,b)=>b.ts.localeCompare(a.ts));
+
+  const varCont=document.getElementById('hist-var-cont');
+  const updCont=document.getElementById('hist-upd-cont');
+
+  const ANALY=[
+    {lbl:'🇻🇪 VES venta',k:'vesV'},{lbl:'🇨🇱 CLP venta',k:'clpV'},
+    {lbl:'🇨🇴 COP venta',k:'copV'},{lbl:'🇵🇪 PEN venta',k:'penV'},
+    {lbl:'💸 ZINLI venta',k:'zinliV'},{lbl:'💵 Dólar BCV',k:'dolarBcv'},
+  ];
+
+  if(!hist.length){
+    varCont.innerHTML='<div class="empty">Guardá tasas para ver el análisis de variación.</div>';
+    updCont.innerHTML='<div class="empty">Sin actualizaciones registradas aún.</div>';
+  } else {
+    const latest=hist[0];
+    const latestDate=latest.ts.split('T')[0];
+    const todayEntries=hist.filter(h=>h.ts.startsWith(latestDate));
+    const todayFirst=todayEntries.length>1?todayEntries[todayEntries.length-1]:null;
+    const d7=new Date(latest.ts); d7.setDate(d7.getDate()-7); const d7str=d7.toISOString().split('T')[0];
+    const d30=new Date(latest.ts); d30.setDate(d30.getDate()-30); const d30str=d30.toISOString().split('T')[0];
+    const week7=[...hist].filter(h=>h.ts.split('T')[0]<=d7str).sort((a,b)=>b.ts.localeCompare(a.ts))[0]||null;
+    const month30=[...hist].filter(h=>h.ts.split('T')[0]<=d30str).sort((a,b)=>b.ts.localeCompare(a.ts))[0]||null;
+
+    varCont.innerHTML=`<div class="table-wrap"><table>
+      <thead><tr>
+        <th style="text-align:left">Moneda</th><th>Actual</th>
+        <th>Var. hoy</th><th>Var. semana</th><th>Var. mes</th>
+      </tr></thead>
+      <tbody>${ANALY.map(m=>{
+        const cur=latest[m.k]; if(!cur) return '';
+        const pct=(ref)=>{
+          if(!ref||!ref[m.k]) return '<span style="color:var(--muted)">—</span>';
+          const p=(cur-ref[m.k])/ref[m.k]*100;
+          const col=p>0?'var(--verde)':p<0?'var(--rojo)':'var(--muted)';
+          return `<span style="color:${col};font-weight:800">${p>0?'+':''}${p.toFixed(2)}%</span>`;
+        };
+        return `<tr>
+          <td style="text-align:left;font-weight:800">${m.lbl}</td>
+          <td style="font-weight:900">${fmt_t(cur)}</td>
+          <td>${pct(todayFirst)}</td><td>${pct(week7)}</td><td>${pct(month30)}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+
+    const fmtTs=ts=>{
+      const d=new Date(ts),pad=n=>String(n).padStart(2,'0');
+      return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    };
+    updCont.innerHTML=hist.slice(0,50).map((h,i)=>{
+      const chips=MONS_T.map(m=>{
+        const hC=h[m.c]!==undefined,hV=h[m.v]!==undefined;
+        if(!hC&&!hV) return '';
+        return `<div class="chip"><div class="chip-mon">${m.lbl}</div>
+          <div class="chip-vals">
+            ${hC?`<span class="chip-c">${fmt_t(h[m.c])}</span>`:''}
+            ${hC&&hV?`<span class="chip-sep">·</span>`:''}
+            ${hV?`<span class="chip-v">${fmt_t(h[m.v])}</span>`:''}
+          </div>
+          <div class="chip-lbl">${hC&&hV?'C · V':hC?'compra':'venta'}</div>
+        </div>`;
+      }).join('');
+      return `<div class="hist-item">
+        <div class="hist-header" onclick="togH(this)">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:900;color:var(--azul)">
+            ${i===0?'<span class="badge b-verde">ÚLTIMA</span>':''}${fmtTs(h.ts)}
+          </div>
+          <span style="color:var(--muted);font-size:12px">▾</span>
+        </div>
+        <div class="hist-body" style="display:${i===0?'block':'none'}">
+          <div class="chips-grid">${chips}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Por día ──
   const lista=[...dbTasas.registros].sort((a,b)=>b.fecha.localeCompare(a.fecha));
   const cont=document.getElementById('hist-cont');
   if(!lista.length){ cont.innerHTML='<div class="empty">No hay tasas registradas aún.</div>'; return; }
