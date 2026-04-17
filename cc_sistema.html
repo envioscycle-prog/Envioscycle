@@ -1083,10 +1083,10 @@ function _parVenta(or, dst){
 
 // Convierte monto de cualquier moneda a Bs usando tasas del módulo Tasas
 // VES/BS : misma moneda, no convierte
-// CLP    : monto × tasa venta CHILE-VENEZUELA (corredor)
+// CLP    : monto × tasa venta CHILE-VENEZUELA (corredor, con margen de cc_envios_pars)
 // PEN    : monto × tasa venta PERU-VENEZUELA
 // COP    : monto × tasa venta COLOMBIA-VENEZUELA
-// USD    : monto × zinliC × vesV  (corredor ZINLI-VENEZUELA)
+// USD    : monto × tasa venta ZINLI-VENEZUELA (zinliC × vesV × (1 + pct%))
 // USDT   : misma moneda, no convierte
 function toBS(monto, moneda){
   if(!monto) return 0;
@@ -1095,7 +1095,13 @@ function toBS(monto, moneda){
   if(moneda==='CLP') return monto*(_parVenta('CLP','VES')||0);
   if(moneda==='PEN') return monto*(_parVenta('PEN','VES')||0);
   if(moneda==='COP') return monto*(_parVenta('COP','VES')||0);
-  if(moneda==='USD'){ const t=_getTRec(); return t?monto*(t.zinliC||0)*(t.vesV||0):0; }
+  if(moneda==='USD'){
+    const t=_getTRec(); if(!t) return 0;
+    const key='ZINLI-VES';
+    const pct=(typeof enviosPars!=='undefined'&&enviosPars[key]!==undefined)?enviosPars[key]:0;
+    const tasaC=(t.zinliC||0)*(t.vesV||0);
+    return monto*tasaC*(1+pct/100);
+  }
   return monto;
 }
 
@@ -1107,21 +1113,26 @@ function ganToUsdt(ganBS){
 }
 
 // Comisión en moneda nativa y su equivalente en USDT
-// VES  : comNativa ÷ vesV  (tasa de venta VES)
-// CLP  : comNativa ÷ clpC  (tasa de compra CLP)
-// PEN  : comNativa ÷ penC
-// COP  : comNativa ÷ copC
-// USD  : comNativa ÷ zinliC (tasa de compra Zinli)
+// VES  : comNativa ÷ vesV (tasa venta VES)
+// CLP  : comNativa ÷ tasaCompra corredor CHILE-VENEZUELA
+// PEN  : comNativa ÷ tasaCompra corredor PERU-VENEZUELA
+// COP  : comNativa ÷ tasaCompra corredor COLOMBIA-VENEZUELA
+// USD  : comNativa ÷ tasaCompra corredor ZINLI-VENEZUELA (zinliC × vesV)
 // USDT : es la misma moneda
 function calcComision(ventaMonto, moneda, pct){
   const t=_getTRec();
   const comNativa=ventaMonto*pct/100;
   let comUsdt=0;
-  if(moneda==='VES'||moneda==='BS'){ const v=t?t.vesV||0:0;   comUsdt=v?comNativa/v:0; }
-  if(moneda==='CLP')               { const v=t?t.clpC||0:0;   comUsdt=v?comNativa/v:0; }
-  if(moneda==='PEN')               { const v=t?t.penC||0:0;   comUsdt=v?comNativa/v:0; }
-  if(moneda==='COP')               { const v=t?t.copC||0:0;   comUsdt=v?comNativa/v:0; }
-  if(moneda==='USD')               { const v=t?t.zinliC||0:0; comUsdt=v?comNativa/v:0; }
+  function parC(or,dst){
+    if(!t) return 0;
+    const par=PARES.find(p=>p.or===or&&p.dst===dst); if(!par) return 0;
+    return calcPar(par,t).tasaC;
+  }
+  if(moneda==='VES'||moneda==='BS'){ const v=t?t.vesV||0:0;              comUsdt=v?comNativa/v:0; }
+  if(moneda==='CLP')               { const v=parC('CLP','VES');           comUsdt=v?comNativa/v:0; }
+  if(moneda==='PEN')               { const v=parC('PEN','VES');           comUsdt=v?comNativa/v:0; }
+  if(moneda==='COP')               { const v=parC('COP','VES');           comUsdt=v?comNativa/v:0; }
+  if(moneda==='USD')               { const v=t?(t.zinliC||0)*(t.vesV||0):0; comUsdt=v?comNativa/v:0; }
   if(moneda==='USDT')              comUsdt=comNativa;
   return{comNativa, comUsdt, moneda};
 }
@@ -1722,7 +1733,7 @@ function saveZelleRow(key,val){
   const par=PARES.find(p=>`${p.or}-${p.dst}`===key);
   const op=par?par.op:'+';
   const dec=par!=null?par.dec:4;
-  const pct=enviosPars[key]||0;
+  const pct=enviosPars[key]!==undefined?enviosPars[key]:5;
   const tasaV=rC>0?(op==='-'?rC*(1-pct/100):rC*(1+pct/100)):0;
   const vEl=document.getElementById('tkv-'+key);
   if(vEl) vEl.textContent=tasaV?fmtFixed(tasaV,dec):'—';
