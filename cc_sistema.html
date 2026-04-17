@@ -240,6 +240,7 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
   <button class="stab" onclick="showVentasPage('rec-historial',this)">Historial</button>
   <button class="stab" onclick="showVentasPage('rec-tarifario',this)">Tarifario</button>
   <button class="stab" onclick="showVentasPage('rec-remesas',this)">Remesas</button>
+  <button class="stab" onclick="showVentasPage('gan-resumen',this)">Ganancias</button>
 </div>
 
 <div class="status-bar" id="tasas-status-bar" style="display:none">
@@ -962,6 +963,48 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
       </div>
     </div>
 
+    <!-- GANANCIAS -->
+    <div id="gan-resumen" class="page">
+      <div class="page-title">Ganancias consolidadas</div>
+
+      <!-- STATS -->
+      <div class="stat-grid" id="gan-stats"></div>
+
+      <!-- COMISIONES POR VENDEDOR -->
+      <div class="card">
+        <div class="card-title">Comisiones por vendedor</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Vendedor</th><th>Com. Streaming</th><th>Com. Recargas</th><th>Com. Remesas</th><th>Total USDT</th></tr></thead>
+            <tbody id="gan-tbody-com"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- HISTORIAL UNIFICADO -->
+      <div class="card">
+        <div class="card-title">Historial unificado</div>
+        <div class="filters">
+          <select id="gan-f-mod" onchange="renderHistGan()">
+            <option value="">Todos los módulos</option>
+            <option value="Streaming">Streaming</option>
+            <option value="Recargas">Recargas</option>
+            <option value="Remesas">Remesas</option>
+          </select>
+          <select id="gan-f-vend" onchange="renderHistGan()"><option value="">Todos los vendedores</option></select>
+          <input type="date" id="gan-f-desde" onchange="renderHistGan()" title="Desde" style="flex:1;min-width:130px;font-size:13px"/>
+          <input type="date" id="gan-f-hasta" onchange="renderHistGan()" title="Hasta" style="flex:1;min-width:130px;font-size:13px"/>
+          <button class="btn-sm" onclick="exportCSVGan()">Exportar CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table style="min-width:700px">
+            <thead><tr><th>Fecha</th><th>Módulo</th><th>Concepto / Cliente</th><th>Vendedor</th><th>Ganancia USDT</th><th>Comisión USDT</th></tr></thead>
+            <tbody id="gan-tbody-hist"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /mod-ventas -->
 
 </div>
@@ -1093,7 +1136,7 @@ function showVentasPage(id,btn){
   document.querySelectorAll('#subnav-ventas .stab').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   btn.classList.add('active');
-  const map={'rec-dashboard':renderDashRec,'rec-historial':()=>{poblarFiltroVendRec();renderHistorialRec();},'rec-tarifario':renderTarifarioRec,'rec-remesas':()=>{poblarCorrederRem();poblarVendedoresRem();initFechaRem();}};
+  const map={'rec-dashboard':renderDashRec,'rec-historial':()=>{poblarFiltroVendRec();renderHistorialRec();},'rec-tarifario':renderTarifarioRec,'rec-remesas':()=>{poblarCorrederRem();poblarVendedoresRem();initFechaRem();},'gan-resumen':renderGanResumen};
   if(map[id])map[id]();
 }
 
@@ -2846,6 +2889,116 @@ function exportCSVRem(){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob(['\ufeff'+h+r],{type:'text/csv;charset=utf-8;'}));
   a.download='cycle_remesas_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+
+// ── GANANCIAS: HELPERS ──
+function _modBadgeGan(m){return m==='Streaming'?'b-azul':m==='Recargas'?'b-cian':m==='Remesas'?'b-verde':'b-gray';}
+function _parseFechaGan(f){
+  if(!f)return null;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(f))return new Date(f+'T00:00:00');
+  const p=f.split('/');
+  if(p.length===3)return new Date(+p[2],+p[1]-1,+p[0]);
+  return null;
+}
+function _buildUnifiedGan(){
+  const str=dbStream.registros.map(r=>({
+    fecha:r.fecha,modulo:'Streaming',
+    concepto:(r.cliente||'—')+(r.servicio?' — '+r.servicio:''),
+    vendedor:r.vendedor||'',ganUsdt:r.gUSDT||0,comUsdt:r.comUsdt||0
+  }));
+  const rec=dbRec.ventas.map(r=>({
+    fecha:r.fecha,modulo:'Recargas',
+    concepto:(r.cliente||'—')+(r.operadora?' ('+r.operadora+')':''),
+    vendedor:r.vendedor||'',ganUsdt:r.gUSDT||0,comUsdt:r.comUsdt||0
+  }));
+  const rem=dbRem.ventas.map(r=>({
+    fecha:r.fecha,modulo:'Remesas',
+    concepto:(r.concepto||'—')+(r.corredor?' ['+r.corredor+']':''),
+    vendedor:r.vendedor||'',ganUsdt:r.ganancia||0,comUsdt:r.comVendedor||0
+  }));
+  return [...str,...rec,...rem];
+}
+
+// ── GANANCIAS: RENDER ──
+function renderGanResumen(){
+  const strGan=dbStream.registros.reduce((s,r)=>s+(r.gUSDT||0),0);
+  const recGan=dbRec.ventas.reduce((s,r)=>s+(r.gUSDT||0),0);
+  const remGan=dbRem.ventas.reduce((s,r)=>s+(r.ganancia||0),0);
+  const tot=strGan+recGan+remGan;
+  document.getElementById('gan-stats').innerHTML=`
+    <div class="stat"><div class="stat-label">Total ganancia</div><div class="stat-val" style="color:var(--verde)">${tot.toFixed(4)}</div><div class="stat-sub">USDT</div></div>
+    <div class="stat"><div class="stat-label">Streaming</div><div class="stat-val" style="color:var(--azul)">${strGan.toFixed(4)}</div><div class="stat-sub">USDT · ${dbStream.registros.length} reg.</div></div>
+    <div class="stat"><div class="stat-label">Recargas</div><div class="stat-val" style="color:#0369a1">${recGan.toFixed(4)}</div><div class="stat-sub">USDT · ${dbRec.ventas.length} reg.</div></div>
+    <div class="stat"><div class="stat-label">Remesas</div><div class="stat-val" style="color:var(--verde)">${remGan.toFixed(4)}</div><div class="stat-sub">USDT · ${dbRem.ventas.length} reg.</div></div>
+  `;
+  // Comisiones por vendedor
+  const vendors=[...new Set([
+    ...dbStream.registros.map(r=>r.vendedor),
+    ...dbRec.ventas.map(r=>r.vendedor),
+    ...dbRem.ventas.map(r=>r.vendedor)
+  ].filter(Boolean))].sort();
+  const tbody=document.getElementById('gan-tbody-com');
+  if(!vendors.length){tbody.innerHTML='<tr><td colspan="5" class="empty">Sin datos de comisiones.</td></tr>';}
+  else{
+    tbody.innerHTML=vendors.map(v=>{
+      const cs=dbStream.registros.filter(r=>r.vendedor===v).reduce((s,r)=>s+(r.comUsdt||0),0);
+      const cr=dbRec.ventas.filter(r=>r.vendedor===v).reduce((s,r)=>s+(r.comUsdt||0),0);
+      const cm=dbRem.ventas.filter(r=>r.vendedor===v).reduce((s,r)=>s+(r.comVendedor||0),0);
+      const ct=cs+cr+cm;
+      return `<tr>
+        <td><strong>${v}</strong></td>
+        <td style="color:var(--azul)">${cs.toFixed(4)}</td>
+        <td style="color:#0369a1">${cr.toFixed(4)}</td>
+        <td style="color:var(--verde)">${cm.toFixed(4)}</td>
+        <td style="font-weight:900;color:var(--azul)">${ct.toFixed(4)}</td>
+      </tr>`;
+    }).join('');
+  }
+  // Populate vendor filter & render historial
+  const fv=document.getElementById('gan-f-vend');
+  const vv=fv.value;
+  fv.innerHTML='<option value="">Todos los vendedores</option>'+
+    vendors.map(v=>`<option value="${v}">${v}</option>`).join('');
+  fv.value=vv;
+  renderHistGan();
+}
+
+function renderHistGan(){
+  const fm=document.getElementById('gan-f-mod').value;
+  const fv=document.getElementById('gan-f-vend').value;
+  const fd=document.getElementById('gan-f-desde').value;
+  const fh=document.getElementById('gan-f-hasta').value;
+  const dDesde=fd?new Date(fd+'T00:00:00'):null;
+  const dHasta=fh?new Date(fh+'T23:59:59'):null;
+  let rows=_buildUnifiedGan();
+  if(fm) rows=rows.filter(r=>r.modulo===fm);
+  if(fv) rows=rows.filter(r=>r.vendedor===fv);
+  if(dDesde||dHasta) rows=rows.filter(r=>{
+    const d=_parseFechaGan(r.fecha); if(!d) return true;
+    if(dDesde&&d<dDesde) return false;
+    if(dHasta&&d>dHasta) return false;
+    return true;
+  });
+  const tbody=document.getElementById('gan-tbody-hist');
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="6" class="empty">Sin resultados.</td></tr>';return;}
+  tbody.innerHTML=rows.map(r=>`<tr>
+    <td style="white-space:nowrap">${r.fecha||'—'}</td>
+    <td><span class="badge ${_modBadgeGan(r.modulo)}" style="font-size:10px">${r.modulo}</span></td>
+    <td>${r.concepto}</td>
+    <td>${r.vendedor||'—'}</td>
+    <td style="color:${r.ganUsdt>=0?'var(--verde)':'var(--rojo)'};font-weight:800">${r.ganUsdt.toFixed(4)}</td>
+    <td style="color:var(--azul)">${r.comUsdt.toFixed(4)}</td>
+  </tr>`).join('');
+}
+
+function exportCSVGan(){
+  const rows=_buildUnifiedGan();
+  if(!rows.length){alert('Sin datos.');return;}
+  const h='Fecha,Módulo,Concepto,Vendedor,Ganancia USDT,Comisión USDT\n';
+  const r=rows.map(v=>`"${v.fecha||''}","${v.modulo}","${v.concepto.replace(/"/g,"'")}","${v.vendedor||''}",${v.ganUsdt.toFixed(4)},${v.comUsdt.toFixed(4)}`).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\ufeff'+h+r],{type:'text/csv;charset=utf-8;'}));
+  a.download='cycle_ganancias_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
 }
 </script>
 </body>
