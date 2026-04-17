@@ -1113,26 +1113,22 @@ function ganToUsdt(ganBS){
 }
 
 // Comisión en moneda nativa y su equivalente en USDT
-// VES  : comNativa ÷ vesV (tasa venta VES)
-// CLP  : comNativa ÷ tasaCompra corredor CHILE-VENEZUELA
-// PEN  : comNativa ÷ tasaCompra corredor PERU-VENEZUELA
-// COP  : comNativa ÷ tasaCompra corredor COLOMBIA-VENEZUELA
-// USD  : comNativa ÷ tasaCompra corredor ZINLI-VENEZUELA (zinliC × vesV)
+// Divide la comisión nativa entre la tasa de COMPRA de cada moneda (cc_tasas_hoy)
+// VES  : comNativa ÷ vesC
+// CLP  : comNativa ÷ clpC
+// PEN  : comNativa ÷ penC
+// COP  : comNativa ÷ copC
+// USD  : comNativa ÷ zinliC
 // USDT : es la misma moneda
 function calcComision(ventaMonto, moneda, pct){
   const t=_getTRec();
   const comNativa=ventaMonto*pct/100;
   let comUsdt=0;
-  function parC(or,dst){
-    if(!t) return 0;
-    const par=PARES.find(p=>p.or===or&&p.dst===dst); if(!par) return 0;
-    return calcPar(par,t).tasaC;
-  }
-  if(moneda==='VES'||moneda==='BS'){ const v=t?t.vesV||0:0;              comUsdt=v?comNativa/v:0; }
-  if(moneda==='CLP')               { const v=parC('CLP','VES');           comUsdt=v?comNativa/v:0; }
-  if(moneda==='PEN')               { const v=parC('PEN','VES');           comUsdt=v?comNativa/v:0; }
-  if(moneda==='COP')               { const v=parC('COP','VES');           comUsdt=v?comNativa/v:0; }
-  if(moneda==='USD')               { const v=t?(t.zinliC||0)*(t.vesV||0):0; comUsdt=v?comNativa/v:0; }
+  if(moneda==='VES'||moneda==='BS'){ const v=t?t.vesC||0:0;   comUsdt=v?comNativa/v:0; }
+  if(moneda==='CLP')               { const v=t?t.clpC||0:0;   comUsdt=v?comNativa/v:0; }
+  if(moneda==='PEN')               { const v=t?t.penC||0:0;   comUsdt=v?comNativa/v:0; }
+  if(moneda==='COP')               { const v=t?t.copC||0:0;   comUsdt=v?comNativa/v:0; }
+  if(moneda==='USD')               { const v=t?t.zinliC||0:0; comUsdt=v?comNativa/v:0; }
   if(moneda==='USDT')              comUsdt=comNativa;
   return{comNativa, comUsdt, moneda};
 }
