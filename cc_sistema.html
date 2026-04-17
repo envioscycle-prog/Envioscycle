@@ -170,6 +170,34 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
 .zr-input:focus{border-color:var(--azul);}
 .pct-input{border:1.5px solid var(--border);border-radius:var(--rsm);padding:3px 4px;font-size:12px;font-weight:900;font-family:'Nunito',sans-serif;width:48px;text-align:center;color:var(--am);background:#fff;outline:none;}
 .pct-input:focus{border-color:var(--am);}
+/* ── RECARGAS MODULE ── */
+.b-digitel{background:#f3e8ff;color:#7c3aed;}
+.b-movistar{background:#dcfce7;color:#16a34a;}
+.b-movilnet{background:#fee2e2;color:#dc2626;}
+.b-zinli{background:#e0f2fe;color:#0369a1;}
+.tar-operadora{border-radius:var(--radius);overflow:hidden;border:1.5px solid var(--border);margin-bottom:1.25rem;}
+.tar-header{padding:10px 16px;font-size:15px;font-weight:900;color:#fff;}
+.tar-header.digitel{background:#7c3aed;}
+.tar-header.movistar{background:#16a34a;}
+.tar-header.movilnet{background:#dc2626;}
+.tar-header.zinli{background:#0369a1;}
+.tar-col-head{display:grid;background:#f0f0ff;border-bottom:2px solid var(--azul);}
+.tar-col-head div{padding:7px 8px;font-size:10px;font-weight:900;color:var(--azul);text-transform:uppercase;letter-spacing:0.05em;text-align:center;border-right:1px solid var(--border);}
+.tar-col-head div:last-child{border-right:none;}
+.tar-fila{display:grid;border-bottom:1px solid var(--border);background:#fff;}
+.tar-fila:last-child{border-bottom:none;}
+.tar-fila:hover{background:#f5f5ff;}
+.tar-cell{padding:6px 8px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:2px;}
+.tar-cell:last-child{border-right:none;}
+.tar-cell-val{font-size:13px;font-weight:800;color:var(--texto);text-align:center;}
+.tar-cell-edit{display:flex;gap:4px;align-items:center;margin-top:3px;}
+.tar-cell-edit input{font-size:11px;padding:3px 6px;height:26px;}
+.tar-cell-edit button{padding:2px 7px;font-size:11px;white-space:nowrap;}
+.tar-hist{font-size:9px;color:var(--muted);margin-top:2px;line-height:1.5;max-height:40px;overflow-y:auto;}
+.tar-hist span{display:block;}
+.tar-add-row{display:flex;gap:8px;align-items:center;padding:10px 12px;background:#f8f7ff;border-top:1.5px solid var(--border);flex-wrap:wrap;}
+.tar-add-row input{width:90px;font-size:12px;padding:5px 8px;}
+.tar-add-row label{font-size:11px;color:var(--muted);white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -179,6 +207,7 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
     <button class="tab active" onclick="showMod('tasas',this)">Tasas</button>
     <button class="tab" onclick="showMod('directorio',this)">Directorio</button>
     <button class="tab" onclick="showMod('streaming',this)">Streaming</button>
+    <button class="tab" onclick="showMod('ventas',this)">Ventas</button>
   </nav>
 </div>
 
@@ -203,6 +232,14 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
   <button class="stab active" onclick="showTasasPage('t-tasas',this)">Tasas del día</button>
   <button class="stab" onclick="showTasasPage('t-envios',this);renderEnviosTasas()">Tabla de envíos</button>
   <button class="stab" onclick="showTasasPage('t-hist',this);renderHistorialTasas()">Historial</button>
+</div>
+
+<div class="subnav" id="subnav-ventas" style="display:none">
+  <button class="stab active" onclick="showVentasPage('rec-dashboard',this)">Recargas</button>
+  <button class="stab" onclick="showVentasPage('rec-registro',this);poblarSelectsRec()">Registrar</button>
+  <button class="stab" onclick="showVentasPage('rec-historial',this)">Historial</button>
+  <button class="stab" onclick="showVentasPage('rec-tarifario',this)">Tarifario</button>
+  <button class="stab" onclick="showVentasPage('rec-remesas',this)">Remesas</button>
 </div>
 
 <div class="status-bar" id="tasas-status-bar" style="display:none">
@@ -702,6 +739,125 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
 
   </div><!-- /mod-tasas -->
 
+  <!-- MODULE: VENTAS -->
+  <div id="mod-ventas" style="display:none">
+
+    <!-- RECARGAS DASHBOARD -->
+    <div id="rec-dashboard" class="page active">
+      <div class="page-title">Recargas</div>
+      <div class="stat-grid" id="rec-stats-grid"></div>
+      <div class="card">
+        <div class="card-title">Últimas ventas</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Cliente</th><th>Vendedor</th><th>Operadora</th><th>Moneda</th><th>Cobrado</th><th>Costo BS</th><th>Venta BS</th><th>Gan. BS</th><th>Gan. USDT</th><th>Comisión</th></tr></thead>
+            <tbody id="rec-tbody-dash"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECARGAS REGISTRO -->
+    <div id="rec-registro" class="page">
+      <div class="page-title" id="rec-form-title">Registrar recarga</div>
+      <div class="card">
+        <div class="card-title">Datos de la venta</div>
+        <div class="g3">
+          <div class="fg"><label>Cliente</label>
+            <select id="rec-f-cliente"><option value="">Seleccionar cliente...</option></select>
+          </div>
+          <div class="fg"><label>Vendedor</label>
+            <select id="rec-f-vendedor"><option value="">Seleccionar vendedor...</option></select>
+          </div>
+          <div class="fg"><label>Operadora</label>
+            <select id="rec-f-operadora" onchange="onCambioClaveRec()">
+              <option value="">Seleccionar...</option>
+              <option>Digitel</option><option>Movistar</option><option>Movilnet</option><option>Zinli</option>
+            </select>
+          </div>
+        </div>
+        <div class="g3">
+          <div class="fg"><label>Moneda de cobro</label>
+            <select id="rec-f-moneda" onchange="calcGanRec()">
+              <option value="VES">Bolívares (VES)</option>
+              <option value="CLP">Pesos chilenos (CLP)</option>
+              <option value="PEN">Soles peruanos (PEN)</option>
+              <option value="COP">Pesos colombianos (COP)</option>
+              <option value="USD">Dólares (USD)</option>
+              <option value="USDT">USDT</option>
+            </select>
+          </div>
+          <div class="fg"><label>Monto cobrado al cliente</label>
+            <input type="number" id="rec-f-venta" placeholder="Ingresá el monto" oninput="onCambioClaveRec()"/>
+          </div>
+          <div class="fg"><label>Comisión vendedor</label>
+            <select id="rec-f-pct" onchange="calcGanRec()">
+              <option value="0">0%</option><option value="1">1%</option>
+              <option value="2" selected>2%</option>
+              <option value="2.5">2.5%</option><option value="3">3%</option>
+            </select>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="fg"><label>Costo de la recarga (BS) — automático</label>
+            <input type="text" id="rec-f-costo" readonly placeholder="Se completa automáticamente"/>
+          </div>
+          <div class="fg"><label>Número recargado</label>
+            <input type="text" id="rec-f-numero" placeholder="04XX-XXXXXXX"/>
+          </div>
+        </div>
+        <div class="calc-box">
+          <div class="calc-item"><label>Venta en BS</label><div class="calc-val" id="rec-c-venta-bs">—</div></div>
+          <div class="calc-item"><label>Costo BS (tarifario)</label><div class="calc-val" id="rec-c-costo-bs">—</div></div>
+          <div class="calc-item"><label>Ganancia BS</label><div class="calc-val" id="rec-c-gan-bs">—</div></div>
+          <div class="calc-item"><label>Ganancia USDT<br><span style="font-size:9px;opacity:0.7">(÷ USD BCV)</span></label><div class="calc-val" id="rec-c-gan-usdt">—</div></div>
+          <div class="calc-item"><label>Comisión vendedor</label><div class="calc-val" id="rec-c-com-nativa">—</div></div>
+          <div class="calc-item"><label>Comisión USDT</label><div class="calc-val" id="rec-c-com-usdt">—</div></div>
+        </div>
+        <div class="g1"><div class="fg"><label>Notas</label><input type="text" id="rec-f-notas" placeholder="Observaciones..."/></div></div>
+        <button class="btn-primary" id="rec-btn-guardar" onclick="guardarRec()">Guardar recarga</button>
+        <div style="text-align:center;margin-top:8px"><button class="btn-sm" id="rec-btn-cancelar" onclick="cancelarRec()" style="display:none">Cancelar edición</button></div>
+      </div>
+    </div>
+
+    <!-- RECARGAS HISTORIAL -->
+    <div id="rec-historial" class="page">
+      <div class="page-title">Historial de recargas</div>
+      <div class="card">
+        <div class="filters">
+          <select onchange="renderHistorialRec()" id="rec-h-op"><option value="">Todas las operadoras</option><option>Digitel</option><option>Movistar</option><option>Movilnet</option><option>Zinli</option></select>
+          <select onchange="renderHistorialRec()" id="rec-h-vend"><option value="">Todos los vendedores</option></select>
+          <select onchange="renderHistorialRec()" id="rec-h-mon"><option value="">Todas las monedas</option><option>VES</option><option>CLP</option><option>PEN</option><option>COP</option><option>USD</option><option>USDT</option></select>
+          <button class="btn-sm" onclick="exportCSVRec()">Exportar CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table style="min-width:900px">
+            <thead><tr><th>Fecha</th><th>Cliente</th><th>Vendedor</th><th>Operadora</th><th>N° recargado</th><th>Moneda</th><th>Cobrado</th><th>Venta BS</th><th>Costo BS</th><th>Gan. BS</th><th>Gan. USDT</th><th>Com.</th><th>Com. USDT</th><th></th></tr></thead>
+            <tbody id="rec-tbody-hist"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECARGAS TARIFARIO -->
+    <div id="rec-tarifario" class="page">
+      <div class="page-title">Tarifario de recargas</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1rem;">Editá cualquier valor — BS, Pesos CLP, COP o Soles PEN. Cada cambio queda registrado con fecha.</p>
+      <div id="rec-tar-contenido"></div>
+    </div>
+
+    <!-- REMESAS PLACEHOLDER -->
+    <div id="rec-remesas" class="page">
+      <div class="page-title">Remesas</div>
+      <div class="card">
+        <div style="text-align:center;padding:3rem;color:var(--muted);font-size:15px;">
+          🚧 Módulo de Remesas — próximamente
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /mod-ventas -->
+
 </div>
 
 <script>
@@ -724,7 +880,7 @@ let dbStream={
   tasas:{vesV:650, clpC:0.057, penC:14.8, copC:0.013, clpVes:0.063, penVes:4.80, copVes:0.018}
 };
 
-let ecId=null,evId=null,epId=null,editId=null;
+let ecId=null,evId=null,epId=null,editId=null,editIdRec=null;
 
 // ── PERSISTENCIA ──
 function saveDir(){try{localStorage.setItem('cc_dir',JSON.stringify(db));}catch(e){}}
@@ -735,21 +891,65 @@ function loadAll(){
 }
 loadAll();
 
+// ── RECARGAS: DATOS ──
+const filasDefaultRec=[
+  {id:1,montoRef:160,  bs:160,  clp:255,  cop:1035, pen:0.94},
+  {id:2,montoRef:320,  bs:320,  clp:510,  cop:2070, pen:1.89},
+  {id:3,montoRef:960,  bs:960,  clp:1529, cop:6211, pen:5.66},
+  {id:4,montoRef:1280, bs:1280, clp:2038, cop:8281, pen:7.55},
+  {id:5,montoRef:1440, bs:1440, clp:2293, cop:9317, pen:8.49},
+  {id:6,montoRef:2400, bs:2400, clp:3822, cop:15528,pen:14.15},
+  {id:7,montoRef:4800, bs:4800, clp:7643, cop:31056,pen:28.30},
+  {id:8,montoRef:5440, bs:5440, clp:8662, cop:35196,pen:32.08},
+];
+const zinlasDefaultRec=[
+  {id:101,montoRef:5,  bs:5,  clp:0, cop:0, pen:0},
+  {id:102,montoRef:10, bs:10, clp:0, cop:0, pen:0},
+  {id:103,montoRef:20, bs:20, clp:0, cop:0, pen:0},
+  {id:104,montoRef:50, bs:50, clp:0, cop:0, pen:0},
+];
+let dbRec={
+  ventas:[],
+  tarifario:{
+    Digitel:  filasDefaultRec.map(f=>Object.assign({},f,{hist:{bs:[],clp:[],cop:[],pen:[]}})),
+    Movistar: [
+      {id:11,montoRef:150, bs:150, clp:239,  cop:970,  pen:0.88,hist:{bs:[],clp:[],cop:[],pen:[]}},
+      {id:12,montoRef:200, bs:200, clp:318,  cop:1294, pen:1.18,hist:{bs:[],clp:[],cop:[],pen:[]}},
+      {id:13,montoRef:900, bs:900, clp:1433, cop:5823, pen:5.31,hist:{bs:[],clp:[],cop:[],pen:[]}},
+      {id:14,montoRef:1600,bs:1600,clp:2548, cop:10352,pen:9.43,hist:{bs:[],clp:[],cop:[],pen:[]}},
+      {id:15,montoRef:3000,bs:3000,clp:4777, cop:19410,pen:17.69,hist:{bs:[],clp:[],cop:[],pen:[]}},
+      {id:16,montoRef:4000,bs:4000,clp:6369, cop:25880,pen:23.58,hist:{bs:[],clp:[],cop:[],pen:[]}},
+      {id:17,montoRef:6000,bs:6000,clp:9554, cop:38819,pen:35.38,hist:{bs:[],clp:[],cop:[],pen:[]}},
+      {id:18,montoRef:10000,bs:10000,clp:15924,cop:64699,pen:58.96,hist:{bs:[],clp:[],cop:[],pen:[]}},
+    ],
+    Movilnet: filasDefaultRec.map((f,i)=>Object.assign({},f,{id:f.id+20,hist:{bs:[],clp:[],cop:[],pen:[]}})),
+    Zinli:    zinlasDefaultRec.map(f=>Object.assign({},f,{hist:{bs:[],clp:[],cop:[],pen:[]}})),
+  }
+};
+function saveRec(){try{localStorage.setItem('cc_rec2',JSON.stringify(dbRec));}catch(e){}}
+function loadRec(){
+  try{const d=localStorage.getItem('cc_rec2');if(d)dbRec=Object.assign(dbRec,JSON.parse(d));}catch(e){}
+}
+loadRec();
+
 // ── NAVEGACIÓN DE MÓDULOS ──
 function showMod(mod,btn){
-  const dir=mod==='directorio', str=mod==='streaming', tas=mod==='tasas';
+  const dir=mod==='directorio', str=mod==='streaming', tas=mod==='tasas', ven=mod==='ventas';
   document.getElementById('mod-directorio').style.display=dir?'block':'none';
   document.getElementById('mod-streaming').style.display=str?'block':'none';
   document.getElementById('mod-tasas').style.display=tas?'block':'none';
+  document.getElementById('mod-ventas').style.display=ven?'block':'none';
   document.getElementById('subnav-dir').style.display=dir?'flex':'none';
   document.getElementById('subnav-stream').style.display=str?'flex':'none';
   document.getElementById('subnav-tasas').style.display=tas?'flex':'none';
+  document.getElementById('subnav-ventas').style.display=ven?'flex':'none';
   document.getElementById('tasas-status-bar').style.display=tas?'flex':'none';
   document.querySelectorAll('#mod-tabs .tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   if(dir)renderResumen();
   else if(str)renderDash();
   else if(tas)initBarTasas();
+  else if(ven)renderDashRec();
 }
 
 function showDirPage(id,btn){
@@ -774,6 +974,15 @@ function showTasasPage(id,btn){
   document.querySelectorAll('#subnav-tasas .stab').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   btn.classList.add('active');
+}
+
+function showVentasPage(id,btn){
+  document.querySelectorAll('#mod-ventas .page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#subnav-ventas .stab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  const map={'rec-dashboard':renderDashRec,'rec-historial':()=>{poblarFiltroVendRec();renderHistorialRec();},'rec-tarifario':renderTarifarioRec};
+  if(map[id])map[id]();
 }
 
 // ── NAVEGACIÓN INTERNA DIRECTORIO ──
@@ -1928,6 +2137,360 @@ function delReg(fecha){
   const ul=[...dbTasas.registros].sort((a,b)=>b.fecha.localeCompare(a.fecha))[0];
   if(ul){ setInputsT(ul); previewTasas(); }
 })();
+
+// ── RECARGAS: CONVERSIONES (usa _getTRec y _parVenta del módulo Tasas) ──
+function toBSRec(monto,moneda){
+  const t=_getTRec();
+  if(!monto)return 0;
+  if(moneda==='VES'||moneda==='BS')return monto;
+  if(moneda==='USD'||moneda==='USDT')return monto*(t?t.dolarBcv||0:0);
+  if(moneda==='CLP')return monto*_parVenta('CLP','VES');
+  if(moneda==='PEN')return monto*_parVenta('PEN','VES');
+  if(moneda==='COP')return monto*_parVenta('COP','VES');
+  return monto;
+}
+function ganToUsdtRec(ganBS){
+  const t=_getTRec();
+  const bcv=t?t.dolarBcv||0:0;
+  return bcv?ganBS/bcv:0;
+}
+function calcComisionRec(ventaMonto,moneda,pct){
+  const t=_getTRec();
+  const comNativa=ventaMonto*pct/100;
+  let comUsdt=0;
+  if(moneda==='VES'||moneda==='BS'){const v=t?t.vesC||0:0;comUsdt=v?comNativa/v:0;}
+  else if(moneda==='CLP'){const v=t?t.clpC||0:0;comUsdt=v?comNativa/v:0;}
+  else if(moneda==='PEN'){const v=t?t.penC||0:0;comUsdt=v?comNativa/v:0;}
+  else if(moneda==='COP'){const v=t?t.copC||0:0;comUsdt=v?comNativa/v:0;}
+  else if(moneda==='USD'||moneda==='USDT')comUsdt=comNativa;
+  return{comNativa,comUsdt};
+}
+
+// ── RECARGAS: COSTO EN TARIFARIO ──
+function getCostoBSRec(operadora,ventaMonto,moneda){
+  const filas=dbRec.tarifario[operadora];
+  if(!filas||!filas.length)return 0;
+  if(operadora==='Zinli'){
+    const t=_getTRec();
+    const bcv=t?t.dolarBcv||0:0;
+    const montoUsd=(moneda==='USD'||moneda==='USDT')?ventaMonto:(bcv?ventaMonto/bcv:0);
+    const fila=filas.reduce((prev,cur)=>Math.abs(cur.montoRef-montoUsd)<Math.abs(prev.montoRef-montoUsd)?cur:prev);
+    return fila.montoRef*bcv;
+  }
+  const ventaBS=toBSRec(ventaMonto,moneda);
+  const fila=filas.reduce((prev,cur)=>Math.abs(cur.bs-ventaBS)<Math.abs(prev.bs-ventaBS)?cur:prev);
+  return fila.bs;
+}
+
+// ── RECARGAS: CAMBIO DE OPERADORA/MONTO ──
+function onCambioClaveRec(){
+  const op=document.getElementById('rec-f-operadora').value;
+  const monto=parseFloat(document.getElementById('rec-f-venta').value)||0;
+  const moneda=document.getElementById('rec-f-moneda').value;
+  if(op&&monto){
+    const costo=getCostoBSRec(op,monto,moneda);
+    document.getElementById('rec-f-costo').value=costo.toFixed(0)+' Bs';
+  }else{
+    document.getElementById('rec-f-costo').value='';
+  }
+  calcGanRec();
+}
+
+// ── RECARGAS: CÁLCULO PRINCIPAL ──
+function calcGanRec(){
+  const moneda=document.getElementById('rec-f-moneda').value;
+  const ventaMonto=parseFloat(document.getElementById('rec-f-venta').value)||0;
+  const costoStr=document.getElementById('rec-f-costo').value;
+  const costoBS=parseFloat(costoStr)||0;
+  const pct=parseFloat(document.getElementById('rec-f-pct').value)||0;
+  const ventaBS=toBSRec(ventaMonto,moneda);
+  const gBS=ventaBS-costoBS;
+  const gUSDT=ganToUsdtRec(gBS);
+  const com=calcComisionRec(ventaMonto,moneda,pct);
+  const monLabel=moneda==='VES'||moneda==='BS'?'Bs':moneda;
+  document.getElementById('rec-c-venta-bs').textContent=ventaBS>0?ventaBS.toFixed(2)+' Bs':'—';
+  document.getElementById('rec-c-costo-bs').textContent=costoBS>0?costoBS.toFixed(0)+' Bs':'—';
+  const ganEl=document.getElementById('rec-c-gan-bs');
+  ganEl.textContent=(ventaBS>0||costoBS>0)?gBS.toFixed(2)+' Bs':'—';
+  ganEl.style.color=gBS>0?'var(--verde)':gBS<0?'var(--rojo)':'var(--azul)';
+  document.getElementById('rec-c-gan-usdt').textContent=ventaBS>0?gUSDT.toFixed(4)+' USDT':'—';
+  document.getElementById('rec-c-com-nativa').textContent=com.comNativa>0?com.comNativa.toFixed(2)+' '+monLabel:'—';
+  document.getElementById('rec-c-com-usdt').textContent=com.comUsdt>0?com.comUsdt.toFixed(4)+' USDT':'—';
+}
+
+// ── RECARGAS: SELECTS ──
+function poblarSelectsRec(){
+  const sc=document.getElementById('rec-f-cliente');
+  const vc=sc.value;
+  sc.innerHTML='<option value="">Seleccionar cliente...</option>'+
+    (db.clientes.length
+      ?db.clientes.map(c=>`<option value="${c.nombre}">${c.nombre}${c.pais?' ('+c.pais+')':''}</option>`).join('')
+      :'<option disabled>⚠️ No hay clientes — agregá desde Directorio</option>');
+  sc.value=vc;
+  const sv=document.getElementById('rec-f-vendedor');
+  const vv=sv.value;
+  sv.innerHTML='<option value="">Seleccionar vendedor...</option>'+
+    db.vendedores.filter(v=>v.estado==='Activo')
+      .map(v=>`<option value="${v.nombre}">${v.nombre} (${v.pct}%)</option>`).join('');
+  sv.value=vv;
+  sv.onchange=()=>{
+    const v=db.vendedores.find(x=>x.nombre===sv.value);
+    if(v)document.getElementById('rec-f-pct').value=v.pct;
+    calcGanRec();
+  };
+}
+function poblarFiltroVendRec(){
+  const el=document.getElementById('rec-h-vend');
+  const a=el.value;
+  el.innerHTML='<option value="">Todos los vendedores</option>'+
+    db.vendedores.map(v=>`<option value="${v.nombre}">${v.nombre}</option>`).join('');
+  el.value=a;
+}
+
+// ── RECARGAS: GUARDAR ──
+function guardarRec(){
+  const cliente=document.getElementById('rec-f-cliente').value;
+  const op=document.getElementById('rec-f-operadora').value;
+  const moneda=document.getElementById('rec-f-moneda').value;
+  const ventaMonto=parseFloat(document.getElementById('rec-f-venta').value)||0;
+  if(!cliente){alert('Seleccioná un cliente.');return;}
+  if(!op){alert('Seleccioná una operadora.');return;}
+  if(!ventaMonto){alert('Ingresá el monto cobrado.');return;}
+  const costoBS=parseFloat(document.getElementById('rec-f-costo').value)||0;
+  const pct=parseFloat(document.getElementById('rec-f-pct').value)||0;
+  const ventaBS=toBSRec(ventaMonto,moneda);
+  const gBS=ventaBS-costoBS;
+  const gUSDT=ganToUsdtRec(gBS);
+  const com=calcComisionRec(ventaMonto,moneda,pct);
+  const obj={
+    id:editIdRec||Date.now(),
+    cliente,vendedor:document.getElementById('rec-f-vendedor').value,
+    operadora:op,moneda,ventaMonto,ventaBS,costoBS,gBS,gUSDT,
+    pct,comNativa:com.comNativa,comUsdt:com.comUsdt,
+    numero:document.getElementById('rec-f-numero').value.trim(),
+    notas:document.getElementById('rec-f-notas').value.trim(),
+    fecha:fmtDate()
+  };
+  if(editIdRec){const i=dbRec.ventas.findIndex(v=>v.id===editIdRec);if(i>-1)dbRec.ventas[i]=obj;editIdRec=null;}
+  else dbRec.ventas.unshift(obj);
+  saveRec();limpiarRec();cancelarRec();alert('✓ Recarga registrada.');renderDashRec();
+}
+function limpiarRec(){
+  ['rec-f-venta','rec-f-costo','rec-f-numero','rec-f-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('rec-f-operadora').value='';
+  document.getElementById('rec-f-moneda').value='VES';
+  document.getElementById('rec-f-pct').value='2';
+  ['rec-c-venta-bs','rec-c-costo-bs','rec-c-gan-bs','rec-c-gan-usdt','rec-c-com-nativa','rec-c-com-usdt'].forEach(id=>{
+    const el=document.getElementById(id);if(el){el.textContent='—';el.style.color='';}
+  });
+}
+function cancelarRec(){
+  editIdRec=null;limpiarRec();
+  document.getElementById('rec-form-title').textContent='Registrar recarga';
+  document.getElementById('rec-btn-guardar').textContent='Guardar recarga';
+  document.getElementById('rec-btn-cancelar').style.display='none';
+}
+function editarRec(id){
+  const r=dbRec.ventas.find(x=>x.id===id);if(!r)return;
+  editIdRec=id;poblarSelectsRec();
+  setTimeout(()=>{
+    document.getElementById('rec-f-cliente').value=r.cliente;
+    document.getElementById('rec-f-vendedor').value=r.vendedor;
+    document.getElementById('rec-f-operadora').value=r.operadora;
+    document.getElementById('rec-f-moneda').value=r.moneda;
+    document.getElementById('rec-f-venta').value=r.ventaMonto;
+    document.getElementById('rec-f-costo').value=r.costoBS+' Bs';
+    document.getElementById('rec-f-pct').value=r.pct;
+    document.getElementById('rec-f-numero').value=r.numero||'';
+    document.getElementById('rec-f-notas').value=r.notas||'';
+    calcGanRec();
+  },50);
+  document.getElementById('rec-form-title').textContent='Editando: '+r.cliente+' — '+r.operadora;
+  document.getElementById('rec-btn-guardar').textContent='Guardar cambios';
+  document.getElementById('rec-btn-cancelar').style.display='inline-block';
+  document.querySelectorAll('#subnav-ventas .stab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#subnav-ventas .stab')[1].classList.add('active');
+  document.querySelectorAll('#mod-ventas .page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('rec-registro').classList.add('active');
+  window.scrollTo(0,0);
+}
+function eliminarRec(id){
+  if(!confirm('¿Eliminar?'))return;
+  dbRec.ventas=dbRec.ventas.filter(v=>v.id!==id);saveRec();renderHistorialRec();renderDashRec();
+}
+function opBadgeRec(op){
+  return op==='Digitel'?'b-digitel':op==='Movistar'?'b-movistar':op==='Movilnet'?'b-movilnet':op==='Zinli'?'b-zinli':'b-gray';
+}
+
+// ── RECARGAS: DASHBOARD ──
+function renderDashRec(){
+  const vs=dbRec.ventas;
+  const ganBS=vs.reduce((s,v)=>s+(v.gBS||0),0);
+  document.getElementById('rec-stats-grid').innerHTML=`
+    <div class="stat"><div class="stat-label">Ventas</div><div class="stat-val">${vs.length}</div><div class="stat-sub">recargas</div></div>
+    <div class="stat"><div class="stat-label">Ganancia BS</div><div class="stat-val">${ganBS.toFixed(0)} Bs</div><div class="stat-sub">= ${ganToUsdtRec(ganBS).toFixed(4)} USDT</div></div>
+    <div class="stat"><div class="stat-label">Digitel</div><div class="stat-val" style="color:#7c3aed">${vs.filter(v=>v.operadora==='Digitel').length}</div></div>
+    <div class="stat"><div class="stat-label">Movistar</div><div class="stat-val" style="color:#16a34a">${vs.filter(v=>v.operadora==='Movistar').length}</div></div>
+    <div class="stat"><div class="stat-label">Movilnet</div><div class="stat-val" style="color:#dc2626">${vs.filter(v=>v.operadora==='Movilnet').length}</div></div>
+    <div class="stat"><div class="stat-label">Zinli</div><div class="stat-val" style="color:#0369a1">${vs.filter(v=>v.operadora==='Zinli').length}</div></div>
+  `;
+  const tbody=document.getElementById('rec-tbody-dash');
+  if(!vs.length){tbody.innerHTML='<tr><td colspan="11" class="empty">Sin recargas registradas.</td></tr>';return;}
+  tbody.innerHTML=vs.slice(0,12).map(v=>{
+    const ml=v.moneda==='VES'||v.moneda==='BS'?'Bs':v.moneda;
+    return `<tr>
+      <td>${v.fecha}</td><td><strong>${v.cliente}</strong></td><td>${v.vendedor||'—'}</td>
+      <td><span class="badge ${opBadgeRec(v.operadora)}">${v.operadora}</span></td>
+      <td><span class="badge b-cian">${v.moneda}</span></td>
+      <td style="font-weight:800">${(v.ventaMonto||0).toFixed(2)} ${v.moneda}</td>
+      <td>${(v.costoBS||0).toFixed(0)} Bs</td>
+      <td>${(v.ventaBS||0).toFixed(0)} Bs</td>
+      <td style="color:${(v.gBS||0)>=0?'var(--verde)':'var(--rojo)'};font-weight:800">${(v.gBS||0).toFixed(0)} Bs</td>
+      <td style="color:var(--azul);font-weight:800">${(v.gUSDT||0).toFixed(4)}</td>
+      <td style="font-size:11px">${(v.comNativa||0).toFixed(2)} ${ml}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── RECARGAS: HISTORIAL ──
+function renderHistorialRec(){
+  poblarFiltroVendRec();
+  const fo=document.getElementById('rec-h-op').value;
+  const fv=document.getElementById('rec-h-vend').value;
+  const fm=document.getElementById('rec-h-mon').value;
+  let vs=dbRec.ventas;
+  if(fo)vs=vs.filter(v=>v.operadora===fo);
+  if(fv)vs=vs.filter(v=>v.vendedor===fv);
+  if(fm)vs=vs.filter(v=>v.moneda===fm);
+  const tbody=document.getElementById('rec-tbody-hist');
+  if(!vs.length){tbody.innerHTML='<tr><td colspan="14" class="empty">Sin resultados.</td></tr>';return;}
+  tbody.innerHTML=vs.map(v=>{
+    const ml=v.moneda==='VES'||v.moneda==='BS'?'Bs':v.moneda;
+    return `<tr>
+      <td>${v.fecha}</td><td><strong>${v.cliente}</strong></td><td>${v.vendedor||'—'}</td>
+      <td><span class="badge ${opBadgeRec(v.operadora)}">${v.operadora}</span></td>
+      <td style="font-size:12px">${v.numero||'—'}</td>
+      <td><span class="badge b-cian">${v.moneda}</span></td>
+      <td style="font-weight:800">${(v.ventaMonto||0).toFixed(2)} ${v.moneda}</td>
+      <td>${(v.ventaBS||0).toFixed(0)} Bs</td>
+      <td>${(v.costoBS||0).toFixed(0)} Bs</td>
+      <td style="color:${(v.gBS||0)>=0?'var(--verde)':'var(--rojo)'};font-weight:800">${(v.gBS||0).toFixed(0)} Bs</td>
+      <td style="color:var(--azul);font-weight:800">${(v.gUSDT||0).toFixed(4)}</td>
+      <td style="font-size:11px">${(v.comNativa||0).toFixed(2)} ${ml}</td>
+      <td style="color:var(--azul);font-size:11px">${(v.comUsdt||0).toFixed(4)} U</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn-sm btn-edit" onclick="editarRec(${v.id})">Editar</button>
+        <button class="btn-sm btn-danger" onclick="eliminarRec(${v.id})">X</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── RECARGAS: TARIFARIO ──
+function renderTarifarioRec(){
+  const ops=[
+    {key:'Digitel',  cls:'digitel',  emoji:'📱', esUsd:false},
+    {key:'Movistar', cls:'movistar', emoji:'📶', esUsd:false},
+    {key:'Movilnet', cls:'movilnet', emoji:'📡', esUsd:false},
+    {key:'Zinli',    cls:'zinli',    emoji:'💳', esUsd:true},
+  ];
+  document.getElementById('rec-tar-contenido').innerHTML=ops.map(op=>{
+    const filas=dbRec.tarifario[op.key]||[];
+    const monCol=op.esUsd?'$':'BS';
+    const colTpl=`1fr 1fr 1fr 1fr`;
+    const filaRows=filas.map(f=>{
+      const hist=f.hist||{bs:[],clp:[],cop:[],pen:[]};
+      const hbs=(hist.bs||[]).slice(-3).reverse().map(h=>`<span>• ${h.f}: ${h.v}</span>`).join('');
+      const hclp=(hist.clp||[]).slice(-3).reverse().map(h=>`<span>• ${h.f}: ${h.v}</span>`).join('');
+      const hcop=(hist.cop||[]).slice(-3).reverse().map(h=>`<span>• ${h.f}: ${h.v}</span>`).join('');
+      const hpen=(hist.pen||[]).slice(-3).reverse().map(h=>`<span>• ${h.f}: ${h.v}</span>`).join('');
+      return `<div class="tar-fila" style="grid-template-columns:${colTpl}">
+        <div class="tar-cell">
+          <div class="tar-cell-val">${monCol} ${f.bs}</div>
+          <div class="tar-cell-edit">
+            <input type="number" id="rtc-${f.id}-bs" value="${f.bs}" placeholder="${monCol}"/>
+            <button class="btn-sm btn-edit" onclick="editarCeldaRec(${f.id},'${op.key}','bs')">✓</button>
+          </div>
+          ${hbs?'<div class="tar-hist">'+hbs+'</div>':''}
+        </div>
+        <div class="tar-cell">
+          <div class="tar-cell-val">CLP ${f.clp}</div>
+          <div class="tar-cell-edit">
+            <input type="number" id="rtc-${f.id}-clp" value="${f.clp}" placeholder="CLP"/>
+            <button class="btn-sm btn-edit" onclick="editarCeldaRec(${f.id},'${op.key}','clp')">✓</button>
+          </div>
+          ${hclp?'<div class="tar-hist">'+hclp+'</div>':''}
+        </div>
+        <div class="tar-cell">
+          <div class="tar-cell-val">COP ${f.cop}</div>
+          <div class="tar-cell-edit">
+            <input type="number" id="rtc-${f.id}-cop" value="${f.cop}" placeholder="COP"/>
+            <button class="btn-sm btn-edit" onclick="editarCeldaRec(${f.id},'${op.key}','cop')">✓</button>
+          </div>
+          ${hcop?'<div class="tar-hist">'+hcop+'</div>':''}
+        </div>
+        <div class="tar-cell">
+          <div class="tar-cell-val">PEN ${f.pen}</div>
+          <div class="tar-cell-edit">
+            <input type="number" id="rtc-${f.id}-pen" value="${f.pen}" placeholder="PEN"/>
+            <button class="btn-sm btn-edit" onclick="editarCeldaRec(${f.id},'${op.key}','pen')">✓</button>
+          </div>
+          ${hpen?'<div class="tar-hist">'+hpen+'</div>':''}
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="tar-operadora">
+      <div class="tar-header ${op.cls}">${op.emoji} ${op.key}${op.esUsd?' — montos en USD ($)':''}</div>
+      <div class="tar-col-head" style="grid-template-columns:${colTpl}">
+        <div>${monCol}</div><div>Pesos CLP</div><div>Pesos COP</div><div>Soles PEN</div>
+      </div>
+      ${filaRows}
+      <div class="tar-add-row">
+        <label>Agregar fila:</label>
+        <input type="number" id="radd-${op.key}-bs" placeholder="${monCol}"/>
+        <input type="number" id="radd-${op.key}-clp" placeholder="CLP"/>
+        <input type="number" id="radd-${op.key}-cop" placeholder="COP"/>
+        <input type="number" id="radd-${op.key}-pen" placeholder="PEN"/>
+        <button class="btn-sm btn-edit" onclick="agregarFilaRec('${op.key}')">+ Agregar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function editarCeldaRec(id,op,campo){
+  const filas=dbRec.tarifario[op];
+  const fila=filas.find(f=>f.id===id);
+  if(!fila)return;
+  const val=parseFloat(document.getElementById(`rtc-${id}-${campo}`).value);
+  if(isNaN(val)){alert('Valor inválido.');return;}
+  if(!fila.hist)fila.hist={bs:[],clp:[],cop:[],pen:[]};
+  if(!fila.hist[campo])fila.hist[campo]=[];
+  fila.hist[campo].push({f:fmtDate(),v:val});
+  fila[campo]=val;
+  if(campo==='bs')fila.montoRef=val;
+  saveRec();renderTarifarioRec();
+}
+function agregarFilaRec(op){
+  const bs=parseFloat(document.getElementById(`radd-${op}-bs`).value)||0;
+  const clp=parseFloat(document.getElementById(`radd-${op}-clp`).value)||0;
+  const cop=parseFloat(document.getElementById(`radd-${op}-cop`).value)||0;
+  const pen=parseFloat(document.getElementById(`radd-${op}-pen`).value)||0;
+  if(!bs){alert('Ingresá el monto BS / $.');return;}
+  const newId=Date.now();
+  dbRec.tarifario[op].push({id:newId,montoRef:bs,bs,clp,cop,pen,hist:{bs:[],clp:[],cop:[],pen:[]}});
+  dbRec.tarifario[op].sort((a,b)=>a.bs-b.bs);
+  saveRec();renderTarifarioRec();
+}
+function exportCSVRec(){
+  if(!dbRec.ventas.length){alert('Sin datos.');return;}
+  const h='Fecha,Cliente,Vendedor,Operadora,N° recargado,Moneda,Cobrado,Venta BS,Costo BS,Gan BS,Gan USDT,Com nativa,Com USDT,Pct,Notas\n';
+  const r=dbRec.ventas.map(v=>{
+    const ml=v.moneda==='VES'||v.moneda==='BS'?'Bs':v.moneda;
+    return `"${v.fecha}","${v.cliente}","${v.vendedor||''}","${v.operadora}","${v.numero||''}","${v.moneda}",${(v.ventaMonto||0).toFixed(2)},${(v.ventaBS||0).toFixed(2)},${(v.costoBS||0).toFixed(2)},${(v.gBS||0).toFixed(2)},${(v.gUSDT||0).toFixed(4)},${(v.comNativa||0).toFixed(2)},${(v.comUsdt||0).toFixed(4)},${v.pct}%,"${v.notas||''}"`;
+  }).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\ufeff'+h+r],{type:'text/csv;charset=utf-8;'}));
+  a.download='cycle_recargas_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
 </script>
 </body>
 </html>
