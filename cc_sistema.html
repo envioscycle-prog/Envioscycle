@@ -846,12 +846,118 @@ tr.sep-row td{background:var(--bg);font-size:10px;font-weight:900;color:var(--mu
       <div id="rec-tar-contenido"></div>
     </div>
 
-    <!-- REMESAS PLACEHOLDER -->
+    <!-- REMESAS -->
     <div id="rec-remesas" class="page">
       <div class="page-title">Remesas</div>
-      <div class="card">
-        <div style="text-align:center;padding:3rem;color:var(--muted);font-size:15px;">
-          🚧 Módulo de Remesas — próximamente
+      <div class="itabs">
+        <button class="itab active" id="rem-itab-form" onclick="showIsec('rem','form',this)">Registrar</button>
+        <button class="itab" id="rem-itab-hist" onclick="showIsec('rem','hist',this);renderHistRem()">Historial</button>
+      </div>
+
+      <!-- FORM -->
+      <div id="rem-form" class="isec active">
+        <div class="card">
+          <div class="card-title">Datos de la remesa</div>
+          <div class="g3">
+            <div class="fg"><label>Fecha</label><input type="date" id="rem-fecha"/></div>
+            <div class="fg"><label>Categoría</label>
+              <select id="rem-cat">
+                <option value="Remesas">Remesas</option>
+                <option value="Servicios">Servicios</option>
+              </select>
+            </div>
+            <div class="fg"><label>Concepto / Cliente</label>
+              <input type="text" id="rem-concepto" placeholder="Nombre o concepto..."/>
+            </div>
+          </div>
+          <div class="g3">
+            <div class="fg"><label>Vendedor</label>
+              <select id="rem-vendedor"><option value="">Sin vendedor</option></select>
+            </div>
+            <div class="fg"><label>% Comisión vendedor</label>
+              <input type="number" id="rem-pct" value="2" step="0.5" min="0" max="100" oninput="calcRem()"/>
+            </div>
+            <div class="fg"><label>Estatus</label>
+              <select id="rem-estatus">
+                <option>PAGADO</option><option>PENDIENTE</option><option>PRESTAMO</option>
+              </select>
+            </div>
+          </div>
+          <div class="g3">
+            <div class="fg"><label>Cuenta origen / entra</label>
+              <input type="text" id="rem-cta-origen" placeholder="ej. FALABELLA, BANESCO"/>
+            </div>
+            <div class="fg"><label>Monto recibido</label>
+              <input type="number" id="rem-monto" placeholder="0" oninput="calcRem()"/>
+            </div>
+            <div class="fg"><label>Moneda origen</label>
+              <select id="rem-mon-origen" onchange="calcRem()">
+                <option value="CLP">CLP</option>
+                <option value="VES">VES</option>
+                <option value="COP">COP</option>
+                <option value="PEN">PEN</option>
+                <option value="USD">USD</option>
+                <option value="USDT">USDT</option>
+              </select>
+            </div>
+          </div>
+          <div class="g3">
+            <div class="fg"><label>Corredor</label>
+              <select id="rem-corredor" onchange="onCambioCorredorRem()">
+                <option value="">Seleccionar...</option>
+              </select>
+            </div>
+            <div class="fg"><label>Cuenta destino / sale</label>
+              <input type="text" id="rem-cta-destino" placeholder="Número, cuenta..."/>
+            </div>
+            <div class="fg"><label>Tipo de pago destino</label>
+              <select id="rem-tipo-pago" onchange="calcRem()">
+                <option>PAGO MOVIL</option>
+                <option>TRANSF.INMEDIATA</option>
+                <option>MISMO BANCO</option>
+              </select>
+            </div>
+          </div>
+          <div class="g2">
+            <div class="fg"><label>Moneda destino (automático)</label>
+              <input type="text" id="rem-mon-destino" readonly style="background:#f5f7ff;font-weight:800;" placeholder="—"/>
+            </div>
+          </div>
+          <div class="calc-box">
+            <div class="calc-item"><label>Tasa venta</label><div class="calc-val" id="rem-c-tasa">—</div></div>
+            <div class="calc-item"><label>Monto enviado</label><div class="calc-val" id="rem-c-enviado">—</div></div>
+            <div class="calc-item"><label>Entrada USDT</label><div class="calc-val" id="rem-c-entrada">—</div></div>
+            <div class="calc-item"><label>Salida USDT</label><div class="calc-val" id="rem-c-salida">—</div></div>
+            <div class="calc-item"><label>Com. 0.3% (PM/TI)</label><div class="calc-val" id="rem-c-com03">—</div></div>
+            <div class="calc-item"><label>Com. vendedor</label><div class="calc-val" id="rem-c-comvend">—</div></div>
+            <div class="calc-item"><label>Ganancia USDT</label><div class="calc-val" id="rem-c-gan">—</div></div>
+          </div>
+          <div id="rem-form-title" style="font-weight:900;font-size:13px;color:var(--azul);margin-bottom:8px">Nueva remesa</div>
+          <button class="btn-primary" onclick="guardarRem()">Guardar remesa</button>
+          <div style="text-align:center;margin-top:8px">
+            <button class="btn-sm" id="rem-btn-cancelar" onclick="cancelarRem()" style="display:none">Cancelar edición</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORIAL -->
+      <div id="rem-hist" class="isec">
+        <div class="card">
+          <div class="filters">
+            <select id="rem-f-corredor" onchange="renderHistRem()"><option value="">Todos los corredores</option></select>
+            <select id="rem-f-vend" onchange="renderHistRem()"><option value="">Todos los vendedores</option></select>
+            <select id="rem-f-est" onchange="renderHistRem()">
+              <option value="">Todos los estatus</option>
+              <option>PAGADO</option><option>PENDIENTE</option><option>PRESTAMO</option>
+            </select>
+            <button class="btn-sm" onclick="exportCSVRem()">Exportar CSV</button>
+          </div>
+          <div class="table-wrap">
+            <table style="min-width:1000px">
+              <thead><tr><th>Fecha</th><th>Cat.</th><th>Concepto</th><th>Vendedor</th><th>Corredor</th><th>Recibido</th><th>Enviado</th><th>Estatus</th><th>Entrada U</th><th>Salida U</th><th>Com.V</th><th>Gan. U</th><th></th></tr></thead>
+              <tbody id="rem-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -932,6 +1038,12 @@ function loadRec(){
 }
 loadRec();
 
+let dbRem={ventas:[]};
+let editIdRem=null;
+function saveRem(){try{localStorage.setItem('cc_remesas',JSON.stringify(dbRem));}catch(e){}}
+function loadRem(){try{const d=localStorage.getItem('cc_remesas');if(d)dbRem=Object.assign(dbRem,JSON.parse(d));}catch(e){}}
+loadRem();
+
 // ── NAVEGACIÓN DE MÓDULOS ──
 function showMod(mod,btn){
   const dir=mod==='directorio', str=mod==='streaming', tas=mod==='tasas', ven=mod==='ventas';
@@ -981,7 +1093,7 @@ function showVentasPage(id,btn){
   document.querySelectorAll('#subnav-ventas .stab').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   btn.classList.add('active');
-  const map={'rec-dashboard':renderDashRec,'rec-historial':()=>{poblarFiltroVendRec();renderHistorialRec();},'rec-tarifario':renderTarifarioRec};
+  const map={'rec-dashboard':renderDashRec,'rec-historial':()=>{poblarFiltroVendRec();renderHistorialRec();},'rec-tarifario':renderTarifarioRec,'rec-remesas':()=>{poblarCorrederRem();poblarVendedoresRem();initFechaRem();}};
   if(map[id])map[id]();
 }
 
@@ -2490,6 +2602,250 @@ function exportCSVRec(){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob(['\ufeff'+h+r],{type:'text/csv;charset=utf-8;'}));
   a.download='cycle_recargas_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+
+// ── REMESAS: CONVERSIONES ──
+function toUsdtCompraRem(monto,moneda){
+  const t=_getTRec(); if(!monto||!t) return 0;
+  if(moneda==='USD'||moneda==='USDT'||moneda==='ZELLE') return monto;
+  if(moneda==='CLP') return t.clpC?monto/t.clpC:0;
+  if(moneda==='VES'||moneda==='BS') return t.vesC?monto/t.vesC:0;
+  if(moneda==='COP') return t.copC?monto/t.copC:0;
+  if(moneda==='PEN') return t.penC?monto/t.penC:0;
+  return 0;
+}
+function toUsdtVentaRem(monto,moneda){
+  const t=_getTRec(); if(!monto||!t) return 0;
+  if(moneda==='USD'||moneda==='USDT'||moneda==='ZELLE') return monto;
+  if(moneda==='CLP') return t.clpV?monto/t.clpV:0;
+  if(moneda==='VES'||moneda==='BS') return t.vesV?monto/t.vesV:0;
+  if(moneda==='COP') return t.copV?monto/t.copV:0;
+  if(moneda==='PEN') return t.penV?monto/t.penV:0;
+  return 0;
+}
+
+// ── REMESAS: SELECTS ──
+function poblarCorrederRem(){
+  const el=document.getElementById('rem-corredor'); if(!el) return;
+  const v=el.value;
+  el.innerHTML='<option value="">Seleccionar...</option>'+
+    PARES.map(p=>`<option value="${p.or}-${p.dst}">${p.label}</option>`).join('');
+  el.value=v;
+}
+function poblarVendedoresRem(){
+  const el=document.getElementById('rem-vendedor'); if(!el) return;
+  const v=el.value;
+  el.innerHTML='<option value="">Sin vendedor</option>'+
+    db.vendedores.filter(x=>x.estado==='Activo')
+      .map(x=>`<option value="${x.nombre}">${x.nombre} (${x.pct}%)</option>`).join('');
+  el.value=v;
+  el.onchange=()=>{
+    const vend=db.vendedores.find(x=>x.nombre===el.value);
+    if(vend) document.getElementById('rem-pct').value=vend.pct;
+    calcRem();
+  };
+}
+function initFechaRem(){
+  const f=document.getElementById('rem-fecha');
+  if(f&&!f.value) f.value=new Date().toISOString().split('T')[0];
+}
+
+// ── REMESAS: CAMBIO DE CORREDOR ──
+function onCambioCorredorRem(){
+  const key=document.getElementById('rem-corredor').value;
+  if(key){
+    const par=PARES.find(p=>`${p.or}-${p.dst}`===key);
+    if(par){
+      document.getElementById('rem-mon-origen').value=par.or==='ZELLE'?'USD':par.or;
+      document.getElementById('rem-mon-destino').value=par.dst==='ZELLE'?'USD':par.dst;
+    }
+  }
+  calcRem();
+}
+
+// ── REMESAS: CÁLCULO PRINCIPAL ──
+function calcRem(){
+  const key=document.getElementById('rem-corredor').value;
+  const monto=parseFloat(document.getElementById('rem-monto').value)||0;
+  const monedaOr=document.getElementById('rem-mon-origen').value;
+  const tipoPago=document.getElementById('rem-tipo-pago').value;
+  const pct=parseFloat(document.getElementById('rem-pct').value)||0;
+  let tasaVenta=0,montoEnviado=0,monedaDst='',parDec=4;
+  if(key){
+    const par=PARES.find(p=>`${p.or}-${p.dst}`===key);
+    if(par){
+      monedaDst=par.dst==='ZELLE'?'USD':par.dst;
+      parDec=par.dec||4;
+      tasaVenta=_parVenta(par.or,par.dst);
+      montoEnviado=monto*tasaVenta;
+    }
+  }
+  const entradaUsdt=toUsdtCompraRem(monto,monedaOr);
+  const salidaUsdt=toUsdtVentaRem(montoEnviado,monedaDst);
+  const esPagoVes=monedaDst==='VES'&&(tipoPago==='PAGO MOVIL'||tipoPago==='TRANSF.INMEDIATA');
+  const t=_getTRec();
+  const com03=esPagoVes?(t&&t.vesV?montoEnviado*0.003/t.vesV:0):0;
+  const comVendedor=entradaUsdt*pct/100;
+  const ganancia=entradaUsdt-salidaUsdt-comVendedor-com03;
+  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v||'—';};
+  s('rem-c-tasa',tasaVenta?fmtFixed(tasaVenta,parDec):null);
+  s('rem-c-enviado',montoEnviado?(montoEnviado.toFixed(2)+' '+monedaDst):null);
+  s('rem-c-entrada',entradaUsdt?(entradaUsdt.toFixed(4)+' U'):null);
+  s('rem-c-salida',salidaUsdt?(salidaUsdt.toFixed(4)+' U'):null);
+  s('rem-c-com03',esPagoVes?(com03.toFixed(4)+' U'):null);
+  s('rem-c-comvend',comVendedor?(comVendedor.toFixed(4)+' U'):null);
+  const ganEl=document.getElementById('rem-c-gan');
+  if(ganEl){
+    ganEl.textContent=(monto||montoEnviado)?ganancia.toFixed(4)+' U':'—';
+    ganEl.style.color=ganancia>0?'var(--verde)':ganancia<0?'var(--rojo)':'var(--azul)';
+  }
+  return{tasaVenta,montoEnviado,monedaDst,entradaUsdt,salidaUsdt,com03,comVendedor,ganancia};
+}
+
+// ── REMESAS: GUARDAR ──
+function guardarRem(){
+  const concepto=document.getElementById('rem-concepto').value.trim();
+  const corredor=document.getElementById('rem-corredor').value;
+  const monto=parseFloat(document.getElementById('rem-monto').value)||0;
+  if(!concepto){alert('Ingresá un concepto o cliente.');return;}
+  if(!corredor){alert('Seleccioná un corredor.');return;}
+  if(!monto){alert('Ingresá el monto recibido.');return;}
+  const calc=calcRem();
+  const obj={
+    id:editIdRem||Date.now(),
+    fecha:document.getElementById('rem-fecha').value||fmtDate(),
+    categoria:document.getElementById('rem-cat').value,
+    concepto,
+    vendedor:document.getElementById('rem-vendedor').value,
+    pct:parseFloat(document.getElementById('rem-pct').value)||0,
+    ctaOrigen:document.getElementById('rem-cta-origen').value.trim(),
+    montoRecibido:monto,
+    monedaOrigen:document.getElementById('rem-mon-origen').value,
+    corredor,
+    estatus:document.getElementById('rem-estatus').value,
+    ctaDestino:document.getElementById('rem-cta-destino').value.trim(),
+    tipoPago:document.getElementById('rem-tipo-pago').value,
+    tasaVenta:calc.tasaVenta,
+    montoEnviado:calc.montoEnviado,
+    monedaDst:calc.monedaDst,
+    entradaUsdt:calc.entradaUsdt,
+    salidaUsdt:calc.salidaUsdt,
+    com03:calc.com03,
+    comVendedor:calc.comVendedor,
+    ganancia:calc.ganancia,
+  };
+  if(editIdRem){const i=dbRem.ventas.findIndex(v=>v.id===editIdRem);if(i>-1)dbRem.ventas[i]=obj;editIdRem=null;}
+  else dbRem.ventas.unshift(obj);
+  saveRem();limpiarRem();cancelarRem();alert('✓ Remesa guardada.');
+}
+function limpiarRem(){
+  ['rem-concepto','rem-cta-origen','rem-cta-destino'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('rem-monto').value='';
+  document.getElementById('rem-corredor').value='';
+  document.getElementById('rem-mon-destino').value='';
+  document.getElementById('rem-mon-origen').value='CLP';
+  document.getElementById('rem-pct').value='2';
+  document.getElementById('rem-cat').value='Remesas';
+  document.getElementById('rem-estatus').value='PAGADO';
+  document.getElementById('rem-fecha').value=new Date().toISOString().split('T')[0];
+  ['rem-c-tasa','rem-c-enviado','rem-c-entrada','rem-c-salida','rem-c-com03','rem-c-comvend'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.textContent='—';
+  });
+  const g=document.getElementById('rem-c-gan');if(g){g.textContent='—';g.style.color='';}
+}
+function cancelarRem(){
+  editIdRem=null;limpiarRem();
+  document.getElementById('rem-form-title').textContent='Nueva remesa';
+  document.getElementById('rem-btn-cancelar').style.display='none';
+}
+function editarRem(id){
+  const r=dbRem.ventas.find(x=>x.id===id);if(!r)return;
+  editIdRem=id;poblarCorrederRem();poblarVendedoresRem();
+  setTimeout(()=>{
+    document.getElementById('rem-fecha').value=r.fecha||new Date().toISOString().split('T')[0];
+    document.getElementById('rem-cat').value=r.categoria||'Remesas';
+    document.getElementById('rem-concepto').value=r.concepto||'';
+    document.getElementById('rem-vendedor').value=r.vendedor||'';
+    document.getElementById('rem-pct').value=r.pct||2;
+    document.getElementById('rem-cta-origen').value=r.ctaOrigen||'';
+    document.getElementById('rem-monto').value=r.montoRecibido||'';
+    document.getElementById('rem-mon-origen').value=r.monedaOrigen||'CLP';
+    document.getElementById('rem-corredor').value=r.corredor||'';
+    document.getElementById('rem-mon-destino').value=r.monedaDst||'';
+    document.getElementById('rem-estatus').value=r.estatus||'PAGADO';
+    document.getElementById('rem-cta-destino').value=r.ctaDestino||'';
+    document.getElementById('rem-tipo-pago').value=r.tipoPago||'PAGO MOVIL';
+    calcRem();
+  },50);
+  document.getElementById('rem-form-title').textContent='Editando: '+r.concepto;
+  document.getElementById('rem-btn-cancelar').style.display='inline-block';
+  document.querySelectorAll('#rec-remesas .itab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#rec-remesas .isec').forEach(s=>s.classList.remove('active'));
+  document.getElementById('rem-itab-form').classList.add('active');
+  document.getElementById('rem-form').classList.add('active');
+  window.scrollTo(0,0);
+}
+function eliminarRem(id){
+  if(!confirm('¿Eliminar remesa?'))return;
+  dbRem.ventas=dbRem.ventas.filter(v=>v.id!==id);
+  saveRem();renderHistRem();
+}
+function estatusBadgeRem(e){
+  return e==='PAGADO'?'b-verde':e==='PENDIENTE'?'b-am':e==='PRESTAMO'?'b-rojo':'b-gray';
+}
+
+// ── REMESAS: HISTORIAL ──
+function poblarFiltrosRem(){
+  const fc=document.getElementById('rem-f-corredor');
+  const fv=document.getElementById('rem-f-vend');
+  const vc=fc.value,vv=fv.value;
+  const corrs=[...new Set(dbRem.ventas.map(v=>v.corredor).filter(Boolean))];
+  fc.innerHTML='<option value="">Todos los corredores</option>'+
+    corrs.map(c=>`<option value="${c}">${c}</option>`).join('');
+  fc.value=vc;
+  fv.innerHTML='<option value="">Todos los vendedores</option>'+
+    db.vendedores.map(v=>`<option value="${v.nombre}">${v.nombre}</option>`).join('');
+  fv.value=vv;
+}
+function renderHistRem(){
+  poblarFiltrosRem();
+  const fc=document.getElementById('rem-f-corredor').value;
+  const fv=document.getElementById('rem-f-vend').value;
+  const fe=document.getElementById('rem-f-est').value;
+  let vs=dbRem.ventas;
+  if(fc)vs=vs.filter(v=>v.corredor===fc);
+  if(fv)vs=vs.filter(v=>v.vendedor===fv);
+  if(fe)vs=vs.filter(v=>v.estatus===fe);
+  const tbody=document.getElementById('rem-tbody');
+  if(!vs.length){tbody.innerHTML='<tr><td colspan="13" class="empty">Sin resultados.</td></tr>';return;}
+  tbody.innerHTML=vs.map(v=>`<tr>
+    <td style="white-space:nowrap">${v.fecha||'—'}</td>
+    <td><span class="badge b-gray" style="font-size:10px">${v.categoria||'—'}</span></td>
+    <td><strong>${v.concepto||'—'}</strong></td>
+    <td>${v.vendedor||'—'}</td>
+    <td><span class="badge b-azul" style="font-size:10px;white-space:nowrap">${v.corredor||'—'}</span></td>
+    <td style="font-weight:800;white-space:nowrap">${(v.montoRecibido||0).toFixed(2)} ${v.monedaOrigen||''}</td>
+    <td style="white-space:nowrap">${(v.montoEnviado||0).toFixed(2)} ${v.monedaDst||''}</td>
+    <td><span class="badge ${estatusBadgeRem(v.estatus)}">${v.estatus||'—'}</span></td>
+    <td style="color:var(--azul);font-size:11px">${(v.entradaUsdt||0).toFixed(4)}</td>
+    <td style="color:var(--azul);font-size:11px">${(v.salidaUsdt||0).toFixed(4)}</td>
+    <td style="font-size:11px">${(v.comVendedor||0).toFixed(4)}</td>
+    <td style="color:${(v.ganancia||0)>=0?'var(--verde)':'var(--rojo)'};font-weight:800;font-size:11px">${(v.ganancia||0).toFixed(4)}</td>
+    <td><div style="display:flex;gap:4px">
+      <button class="btn-sm btn-edit" onclick="editarRem(${v.id})">Editar</button>
+      <button class="btn-sm btn-danger" onclick="eliminarRem(${v.id})">X</button>
+    </div></td>
+  </tr>`).join('');
+}
+function exportCSVRem(){
+  if(!dbRem.ventas.length){alert('Sin datos.');return;}
+  const h='Fecha,Categoría,Concepto,Vendedor,Corredor,Recibido,Moneda Origen,Enviado,Moneda Destino,Estatus,Tipo Pago,Cta Origen,Cta Destino,Tasa Venta,Entrada USDT,Salida USDT,Com 0.3%,Com Vendedor,Ganancia\n';
+  const r=dbRem.ventas.map(v=>
+    `"${v.fecha||''}","${v.categoria||''}","${v.concepto||''}","${v.vendedor||''}","${v.corredor||''}",${(v.montoRecibido||0).toFixed(2)},"${v.monedaOrigen||''}",${(v.montoEnviado||0).toFixed(2)},"${v.monedaDst||''}","${v.estatus||''}","${v.tipoPago||''}","${v.ctaOrigen||''}","${v.ctaDestino||''}",${(v.tasaVenta||0).toFixed(6)},${(v.entradaUsdt||0).toFixed(4)},${(v.salidaUsdt||0).toFixed(4)},${(v.com03||0).toFixed(4)},${(v.comVendedor||0).toFixed(4)},${(v.ganancia||0).toFixed(4)}`
+  ).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\ufeff'+h+r],{type:'text/csv;charset=utf-8;'}));
+  a.download='cycle_remesas_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
 }
 </script>
 </body>
